@@ -75,7 +75,7 @@ try {
             'total_registros' => $integridad['total_registros'],
             'inumsop_unicos' => $integridad['inumsop_unicos'],
             'duplicados' => $integridad['duplicados_inumsop'],
-            'integridad_ok' => $integridad['duplicados_inumsop'] == 0
+            'integridad_ok' => $integridad['duplicados_inumsop'] == 1
         ]
     ]);
 
