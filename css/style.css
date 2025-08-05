@@ -149,10 +149,6 @@ button:hover {
     box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
 }
 
-.config-buttons {
-    margin-bottom: 25px;
-}
-
 .format-info {
     margin-top: 20px;
     padding: 20px;

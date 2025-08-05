@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const cleanupBtn = document.createElement('button');
         cleanupBtn.id = 'cleanupBtn';
         cleanupBtn.innerHTML = ' Limpiar Archivos y Datos';
-        cleanupBtn.className = 'config-btn';
         cleanupBtn.style.display = 'none';
         cleanupBtn.style.marginLeft = '15px';
         actionButtons.appendChild(cleanupBtn);
@@ -22,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function importarArchivo(action, file, tipo) {
         const formData = new FormData();
-        formData.append('configFile', file);
         formData.append('action', action);
 
         const fileExt = file.name.split('.').pop().toUpperCase();
