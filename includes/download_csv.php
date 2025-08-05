@@ -108,7 +108,7 @@ function realizarLimpiezaCompleta($conn)
         $deleteStmt->execute();
         $registrosEliminados = $deleteStmt->rowCount();
 
-        $uploadDir = '../uploads/';
+        $uploadDir = '../required-files/';
         $archivosEliminados = 0;
 
         if (is_dir($uploadDir)) {

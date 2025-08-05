@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (isset($_POST['action']) && $_POST['action'] === 'import_centros' && isset($_FILES['configFile'])) {
 
-            $uploadDir = '../uploads/';
+            $uploadDir = '../required-files/';
             if (!file_exists($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
             }
@@ -153,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (isset($_POST['action']) && $_POST['action'] === 'import_elementos' && isset($_FILES['configFile'])) {
 
-            $uploadDir = '../uploads/';
+            $uploadDir = '../required-files/';
             if (!file_exists($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
             }
@@ -199,7 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         if (isset($_FILES['csvFile'])) {
 
-            $uploadDir = '../uploads/';
+            $uploadDir = '../required-files/';
             if (!file_exists($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
             }

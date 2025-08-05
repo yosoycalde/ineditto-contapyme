@@ -21,7 +21,7 @@ function verificarEstadoLimpieza()
         $registrosTemporales = $result['total_registros'];
 
 
-        $uploadDir = '../uploads/';
+        $uploadDir = '../required-files/';
         $archivosTemporales = 0;
 
         if (is_dir($uploadDir)) {
@@ -66,7 +66,7 @@ function realizarLimpiezaForzada()
         $stmt->execute();
         $registrosEliminados = $stmt->rowCount();
 
-        $uploadDir = '../uploads/';
+        $uploadDir = '../required-files/';
         $archivosEliminados = 0;
 
         if (is_dir($uploadDir)) {
