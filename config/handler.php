@@ -423,7 +423,6 @@ function procesarInventarioIneditto($archivo_csv)
                     $fila['IRECURSO'] ?? ''
                 );
 
-                // Obtener el siguiente número consecutivo para INUMSOP
                 $siguienteINUMSOP = obtenerSiguienteINUMSOP();
 
                 $stmt->execute([
@@ -637,7 +636,6 @@ function obtenerEstadisticasTablaTemp()
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // Agregar información del contador
         $estadoContador = obtenerEstadoContador();
         $result['contador_actual'] = $estadoContador['valor_actual'];
         $result['proximo_inumsop'] = $estadoContador['proximo_valor'];

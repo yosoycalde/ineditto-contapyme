@@ -64,14 +64,14 @@ try {
             $row['INVENTARIO'] ?? '',
             $row['IRECURSO'] ?? '',
             $row['ICCSUBCC'] ?? '',
-            '', // ILABOR vacío según especificación
+            '',
             $row['QCANTLUN'] ?? '',
-            '', // QCANTMAR vacío
-            '', // QCANTMIE vacío
-            '', // QCANTJUE vacío
-            '', // QCANTVIE vacío
-            '', // QCANTSAB vacío
-            '', // QCANTDOM vacío
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
             $row['SOBSERVAC'] ?? ''
         ];
         fputcsv($csvOutput, $csvRow);
