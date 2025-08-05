@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interfaz Ineditto → ContaPyme</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="icon/interfaz.png">
+</head>
+
+<body>
+    <canvas id="particleCanvas"></canvas>
+    <div class="container">
+        <h1>Procesador de Inventarios Ineditto → ContaPyme</h1>
+
+        <div class="upload-section">
+            <h2>Configuración Inicial</h2>
+            <p class="section-description">Antes de procesar inventarios, debe configurar los centros de costos y
+                elementos del sistema.</p>
+
+            <div class="config-buttons">
+                <button id="importCentrosBtn" class="config-btn">
+                    Importar Centros de Costos
+                </button>
+                <button id="importElementosBtn" class="config-btn">
+                    Importar Elementos
+                </button>
+            </div>
+
+            <input type="file" id="configFile" accept=".csv,.xlsx,.xls" style="display: none;">
+
+            <div class="config-info">
+                <h4>Formatos esperados:</h4>
+                <div class="format-list">
+                    <div class="format-item">
+                        <strong>Centros de Costos:</strong> CSV, XLSX o XLS con columnas: Codigo, Nombre
+                    </div>
+                    <div class="format-item">
+                        <strong>Elementos:</strong> CSV, XLSX o XLS con columnas: Cód. Artículo, Referencia, Centro
+                    </div>
+                </div>
+                <div class="format-description">
+                    <p><strong>Formatos soportados:</strong></p>
+                    <ul>
+                        <li><strong>CSV:</strong> Archivo de texto separado por comas</li>
+                        <li><strong>XLSX:</strong> Excel moderno (recomendado)</li>
+                        <li><strong>XLS:</strong> Excel antiguo (compatibilidad limitada)</li>
+                    </ul>
+                    <p><em>Los archivos Excel se convierten automáticamente a CSV para procesamiento.</em></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="upload-section">
+            <h2>Procesar Inventario Ineditto</h2>
+            <p class="section-description">Suba el archivo CSV o Excel exportado desde Ineditto para convertirlo al
+                formato ContaPyme.</p>
+
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="file-input-container">
+                    <input type="file" id="csvFile" name="csvFile" accept=".csv,.xlsx,.xls" required>
+                    <button type="submit">Procesar Archivo</button>
+                </div>
+            </form>
+
+            <div class="format-info">
+                <h3>Formato esperado del archivo Ineditto:</h3>
+                <div class="format-description">
+                    <p><strong>Columnas requeridas:</strong></p>
+                    <code>IEMP, FSOPORT, ITDSOP, INUMSOP, INVENTARIO, IRECURSO, ICCSUBCC, ILABOR, QCANTLUN, QCANTMAR, QCANTMIE, QCANTJUE, QCANTVIE, QCANTSAB, QCANTDOM, SOBSERVAC</code>
+
+                    <p><strong>Formatos aceptados:</strong></p>
+                    <ul>
+                        <li><strong>CSV:</strong> Archivo de texto con datos separados por comas</li>
+                        <li><strong>XLSX:</strong> Archivo Excel moderno (Office 2007+)</li>
+                        <li><strong>XLS:</strong> Archivo Excel clásico (compatibilidad básica)</li>
+                    </ul>
+                </div>
+
+                <div class="logic-explanation">
+                    <h4>Lógica de Procesamiento:</h4>
+                    <ul>
+                        <li><strong>Si ILABOR tiene valor:</strong> Se busca el centro de costo correspondiente</li>
+                        <li><strong>Si ILABOR está vacío:</strong> Se usa el Centro de Costo 1 del elemento</li>
+                        <li><strong>Si no se encuentra ninguno:</strong> Se asigna el centro de costo por defecto
+                            (REVISTAS)</li>
+                        <li><strong>Archivos Excel:</strong> Se procesan automáticamente sin pérdida de datos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-section" id="results" style="display: none;">
+            <h2> Resultados del Procesamiento</h2>
+            <div id="processInfo"></div>
+            <div class="action-buttons">
+                <button id="downloadBtn" class="download-btn" style="display: none;">
+                    Descargar CSV para ContaPyme
+                </button>
+            </div>
+        </div>
+
+        <div class="preview-section" id="preview" style="display: none;">
+            <h2> Vista Previa Formato ContaPyme</h2>
+
+            <div class="format-description">
+                <p><strong>Formato de salida ContaPyme:</strong></p>
+                <code>IEMP, FSOPORT, ITDSOP, INUMSOP, INVENTARIO, IRECURSO, ICCSUBCC, ILABOR, QCANTLUN, QCANTMAR, QCANTMIE, QCANTJUE, QCANTVIE, QCANTSAB, QCANTDOM, SOBSERVAC</code>
+                <p class="note"><em>Nota: Los campos ILABOR y días de la semana (MAR-DOM) se envían vacíos según
+                        especificación. La salida siempre es en formato CSV.</em></p>
+            </div>
+
+            <div id="distribucion" class="distribucion-section"></div>
+
+            <div class="table-container">
+                <table id="dataTable">
+                    <thead id="tableHead"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>
