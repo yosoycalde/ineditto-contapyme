@@ -7,7 +7,7 @@ header('Access-Control-Allow-Headers: Content-Type');
 require_once '../config/database.php';
 
 function limpiarArchivosTemporales() {
-    $uploadDir = '../required-files/';
+    $uploadDir = '../uploads/';
     
     if (!is_dir($uploadDir)) {
         return 0;
