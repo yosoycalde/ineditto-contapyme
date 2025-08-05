@@ -287,7 +287,6 @@ function procesarInventarioIneditto($archivo_csv)
                     $fila['IRECURSO'] ?? ''
                 );
 
-                // *** OBTENER EL SIGUIENTE NÚMERO CONSECUTIVO ***
                 $siguienteINUMSOP = obtenerSiguienteINUMSOP();
 
                 $stmt->execute([

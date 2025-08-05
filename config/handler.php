@@ -2,8 +2,8 @@
 require_once __DIR__ . '/../config/database.php';
 
 /**
- * Obtiene el siguiente número consecutivo para INUMSOP
- * @return int Siguiente número consecutivo
+ * Entrega el ultimo numero consecutivo en INUMSOP
+ * @return int 
  */
 function obtenerSiguienteINUMSOP()
 {
@@ -44,8 +44,8 @@ function obtenerSiguienteINUMSOP()
 }
 
 /**
- * Verifica si un INUMSOP ya existe en la base de datos
- * @param string $inumsop Número a verificar
+ * Nos ayuda a verificar si INUMSOP si esta en la tabla 
+ * @param string 
  * @return bool True si existe, False si no existe
  */
 function existeINUMSOP($inumsop)
@@ -89,6 +89,7 @@ function obtenerEstadoContador()
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$result) {
+
             $insertQuery = "INSERT INTO contadores (nombre, valor_actual) VALUES ('INUMSOP', 0)";
             $insertStmt = $conn->prepare($insertQuery);
             $insertStmt->execute();
