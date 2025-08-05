@@ -3,11 +3,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const resultsSection = document.getElementById('results');
     const previewSection = document.getElementById('preview');
     const downloadBtn = document.getElementById('downloadBtn');
-    const configFile = document.getElementById('configFile');
-
-    const importCentrosBtn = document.getElementById('importCentrosBtn');
-    const importElementosBtn = document.getElementById('importElementosBtn');
-
     const actionButtons = document.querySelector('.action-buttons');
     if (actionButtons) {
         const cleanupBtn = document.createElement('button');
@@ -24,54 +19,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-
-    importCentrosBtn.addEventListener('click', function () {
-        configFile.accept = '.csv,.xlsx,.xls';
-        configFile.onchange = function () {
-            if (this.files.length > 0) {
-                const file = this.files[0];
-                const fileExt = file.name.split('.').pop().toLowerCase();
-
-                if (!['csv', 'xlsx', 'xls'].includes(fileExt)) {
-                    showMessage('Solo se permiten archivos CSV, XLSX o XLS', 'error');
-                    return;
-                }
-
-                if (fileExt === 'xls') {
-                    if (!confirm('Los archivos XLS pueden tener problemas de compatibilidad. ¿Desea continuar? Se recomienda usar XLSX o CSV.')) {
-                        return;
-                    }
-                }
-
-                importarArchivo('import_centros', file, 'Centros de Costos');
-            }
-        };
-        configFile.click();
-    });
-
-    importElementosBtn.addEventListener('click', function () {
-        configFile.accept = '.csv,.xlsx,.xls';
-        configFile.onchange = function () {
-            if (this.files.length > 0) {
-                const file = this.files[0];
-                const fileExt = file.name.split('.').pop().toLowerCase();
-
-                if (!['csv', 'xlsx', 'xls'].includes(fileExt)) {
-                    showMessage('Solo se permiten archivos CSV, XLSX o XLS', 'error');
-                    return;
-                }
-
-                if (fileExt === 'xls') {
-                    if (!confirm('Los archivos XLS pueden tener problemas de compatibilidad. ¿Desea continuar? Se recomienda usar XLSX o CSV.')) {
-                        return;
-                    }
-                }
-
-                importarArchivo('import_elementos', file, 'Elementos');
-            }
-        };
-        configFile.click();
-    });
 
     function importarArchivo(action, file, tipo) {
         const formData = new FormData();
