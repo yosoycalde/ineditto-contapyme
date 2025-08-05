@@ -49,18 +49,6 @@ h2 {
     padding-left: 15px;
 }
 
-.upload-section,
-.results-section,
-.preview-section {
-    margin-bottom: 30px;
-    padding: 25px;
-    border: 1px solid #e8e1ed;
-    border-radius: 10px;
-    background: #f8f9fa;
-    position: relative;
-    transition: all 0.3s ease;
-}
-
 .upload-section:hover,
 .results-section:hover,
 .preview-section:hover {
@@ -226,13 +214,7 @@ button:hover {
     border-left: 3px solid #28a745;
 }
 
-.config-info {
-    background: #e8f5e8;
-    border: 1px solid #c3e6c3;
-    border-radius: 6px;
-    padding: 15px;
-    margin-top: 20px;
-}
+
 
 .format-list {
     margin-top: 10px;
@@ -419,6 +401,3 @@ tr:hover {
         transform: rotate(360deg);
     }
 }
-
-
-
