@@ -278,6 +278,7 @@ function procesarInventarioIneditto($archivo_csv)
 
         $stmt = $conn->prepare($query);
         $procesados = 0;
+        $estadoContadorInicial = obtenerEstadoContador();
 
         foreach ($datos as $index => $fila) {
             try {
@@ -286,11 +287,14 @@ function procesarInventarioIneditto($archivo_csv)
                     $fila['IRECURSO'] ?? ''
                 );
 
+                // *** OBTENER EL SIGUIENTE NÚMERO CONSECUTIVO ***
+                $siguienteINUMSOP = obtenerSiguienteINUMSOP();
+
                 $stmt->execute([
                     ':iemp' => $fila['IEMP'] ?? '1',
                     ':fsoport' => $fila['FSOPORT'] ?? '',
                     ':itdsop' => $fila['ITDSOP'] ?? '160',
-                    ':inumsop' => $fila['INUMSOP'] ?? '',
+                    ':inumsop' => $siguienteINUMSOP, // *** USAR CONSECUTIVO AUTOMÁTICO ***
                     ':inventario' => $fila['INVENTARIO'] ?? '1',
                     ':irecurso' => $fila['IRECURSO'] ?? '',
                     ':iccsubcc' => $centro_costo,
@@ -312,6 +316,9 @@ function procesarInventarioIneditto($archivo_csv)
                 error_log("Error procesando fila " . ($index + 2) . ": " . $e->getMessage() . " - Datos: " . print_r($fila, true));
             }
         }
+
+        $estadoContadorFinal = obtenerEstadoContador();
+        error_log("Contador INUMSOP - Inicial: " . $estadoContadorInicial['valor_actual'] . ", Final: " . $estadoContadorFinal['valor_actual']);
 
         return $procesados;
 
@@ -493,20 +500,172 @@ function obtenerEstadisticasTablaTemp()
                     COUNT(*) as total_registros,
                     COUNT(CASE WHEN ILABOR IS NULL OR ILABOR = '' THEN 1 END) as ilabor_vacios,
                     COUNT(DISTINCT centro_costo_asignado) as centros_costo_diferentes,
-                    COALESCE(SUM(QCANTLUN), 0) as suma_cantidades
+                    COALESCE(SUM(QCANTLUN), 0) as suma_cantidades,
+                    MIN(INUMSOP) as primer_inumsop,
+                    MAX(INUMSOP) as ultimo_inumsop
                   FROM inventarios_temp";
 
         $stmt = $conn->prepare($query);
         $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $estadoContador = obtenerEstadoContador();
+        $result['contador_actual'] = $estadoContador['valor_actual'];
+        $result['proximo_inumsop'] = $estadoContador['proximo_valor'];
+        
+        return $result;
     } catch (Exception $e) {
         error_log("Error obteniendo estadísticas: " . $e->getMessage());
         return [
             'total_registros' => 0,
             'ilabor_vacios' => 0,
             'centros_costo_diferentes' => 0,
-            'suma_cantidades' => 0
+            'suma_cantidades' => 0,
+            'primer_inumsop' => 0,
+            'ultimo_inumsop' => 0,
+            'contador_actual' => 0,
+            'proximo_inumsop' => 1
         ];
+    }
+}
+
+/**
+ * Obtiene el siguiente número consecutivo para INUMSOP
+ * @return int Siguiente número consecutivo
+ */
+function obtenerSiguienteINUMSOP()
+{
+    $database = new Database();
+    $conn = $database->connect();
+    
+    try {
+        $conn->beginTransaction();
+        $checkQuery = "SELECT valor_actual FROM contadores WHERE nombre = 'INUMSOP'";
+        $checkStmt = $conn->prepare($checkQuery);
+        $checkStmt->execute();
+        $result = $checkStmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$result) {
+            // Crear el contador si no existe
+            $insertQuery = "INSERT INTO contadores (nombre, valor_actual) VALUES ('INUMSOP', 0)";
+            $insertStmt = $conn->prepare($insertQuery);
+            $insertStmt->execute();
+            $valorActual = 0;
+        } else {
+            $valorActual = $result['valor_actual'];
+        }
+        
+        // Incrementar el contador y obtener el nuevo valor
+        $updateQuery = "UPDATE contadores SET valor_actual = valor_actual + 1 WHERE nombre = 'INUMSOP'";
+        $updateStmt = $conn->prepare($updateQuery);
+        $updateStmt->execute();
+        
+        $siguienteNumero = $valorActual + 1;
+        
+        // Confirmar transacción
+        $conn->commit();
+        
+        return $siguienteNumero;
+        
+    } catch (Exception $e) {
+        // Revertir transacción en caso de error
+        $conn->rollBack();
+        error_log("Error obteniendo siguiente INUMSOP: " . $e->getMessage());
+        throw new Exception("Error al obtener número consecutivo: " . $e->getMessage());
+    }
+}
+
+/**
+ * Obtiene el estado actual del contador
+ * @return array Estado del contador con valor actual y próximo valor
+ */
+function obtenerEstadoContador()
+{
+    $database = new Database();
+    $conn = $database->connect();
+    
+    try {
+        $query = "SELECT valor_actual, 
+                         (valor_actual + 1) as proximo_valor,
+                         fecha_actualizacion 
+                  FROM contadores 
+                  WHERE nombre = 'INUMSOP'";
+        
+        $stmt = $conn->prepare($query);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$result) {
+            // Si no existe el contador, crearlo
+            $insertQuery = "INSERT INTO contadores (nombre, valor_actual) VALUES ('INUMSOP', 0)";
+            $insertStmt = $conn->prepare($insertQuery);
+            $insertStmt->execute();
+            
+            return [
+                'valor_actual' => 0,
+                'proximo_valor' => 1,
+                'fecha_actualizacion' => date('Y-m-d H:i:s')
+            ];
+        }
+        
+        return $result;
+        
+    } catch (Exception $e) {
+        error_log("Error obteniendo estado del contador: " . $e->getMessage());
+        return [
+            'valor_actual' => 0,
+            'proximo_valor' => 1,
+            'fecha_actualizacion' => date('Y-m-d H:i:s')
+        ];
+    }
+}
+
+/**
+ * Verifica si un INUMSOP ya existe en la base de datos
+ * @param string $inumsop Número a verificar
+ * @return bool True si existe, False si no existe
+ */
+function existeINUMSOP($inumsop)
+{
+    $database = new Database();
+    $conn = $database->connect();
+    
+    try {
+        $query = "SELECT COUNT(*) as existe FROM inventarios_temp WHERE INUMSOP = :inumsop";
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':inumsop', $inumsop);
+        $stmt->execute();
+        
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['existe'] > 0;
+        
+    } catch (Exception $e) {
+        error_log("Error verificando INUMSOP existente: " . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Reinicia el contador a un valor específico (usar con precaución)
+ * @param int $nuevoValor Nuevo valor para el contador
+ * @return bool True si se reinició correctamente
+ */
+function reiniciarContadorINUMSOP($nuevoValor = 0)
+{
+    $database = new Database();
+    $conn = $database->connect();
+    
+    try {
+        $query = "UPDATE contadores SET valor_actual = :nuevo_valor WHERE nombre = 'INUMSOP'";
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':nuevo_valor', $nuevoValor, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt->rowCount() > 0;
+        
+    } catch (Exception $e) {
+        error_log("Error reiniciando contador INUMSOP: " . $e->getMessage());
+        return false;
     }
 }
 ?>

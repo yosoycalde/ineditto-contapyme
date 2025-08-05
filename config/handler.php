@@ -11,17 +11,14 @@ function obtenerSiguienteINUMSOP()
     $conn = $database->connect();
     
     try {
-        // Iniciar transacción para asegurar atomicidad
         $conn->beginTransaction();
         
-        // Verificar si existe el contador, si no crearlo
         $checkQuery = "SELECT valor_actual FROM contadores WHERE nombre = 'INUMSOP'";
         $checkStmt = $conn->prepare($checkQuery);
         $checkStmt->execute();
         $result = $checkStmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$result) {
-            // Crear el contador si no existe
             $insertQuery = "INSERT INTO contadores (nombre, valor_actual) VALUES ('INUMSOP', 0)";
             $insertStmt = $conn->prepare($insertQuery);
             $insertStmt->execute();
@@ -29,21 +26,17 @@ function obtenerSiguienteINUMSOP()
         } else {
             $valorActual = $result['valor_actual'];
         }
-        
-        // Incrementar el contador y obtener el nuevo valor
         $updateQuery = "UPDATE contadores SET valor_actual = valor_actual + 1 WHERE nombre = 'INUMSOP'";
         $updateStmt = $conn->prepare($updateQuery);
         $updateStmt->execute();
         
         $siguienteNumero = $valorActual + 1;
-        
-        // Confirmar transacción
+
         $conn->commit();
         
         return $siguienteNumero;
         
     } catch (Exception $e) {
-        // Revertir transacción en caso de error
         $conn->rollBack();
         error_log("Error obteniendo siguiente INUMSOP: " . $e->getMessage());
         throw new Exception("Error al obtener número consecutivo: " . $e->getMessage());
@@ -96,7 +89,6 @@ function obtenerEstadoContador()
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$result) {
-            // Si no existe el contador, crearlo
             $insertQuery = "INSERT INTO contadores (nombre, valor_actual) VALUES ('INUMSOP', 0)";
             $insertStmt = $conn->prepare($insertQuery);
             $insertStmt->execute();
