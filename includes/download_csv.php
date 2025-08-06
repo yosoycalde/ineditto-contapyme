@@ -62,6 +62,7 @@ try {
             $row['ITDSOP'] ?? '',
             $row['INUMSOP'] ?? '',
             $row['INVENTARIO'] ?? '',
+            
             $row['IRECURSO'] ?? '',
             $row['ICCSUBCC'] ?? '',
             '',
