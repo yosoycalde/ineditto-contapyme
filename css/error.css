@@ -5,7 +5,6 @@ body {
     padding: 20px;
     text-align: center;
 }
-
 .error-container {
     background: #f8d7da;
     border: 1px solid #f5c6cb;
@@ -13,7 +12,6 @@ body {
     padding: 30px;
     border-radius: 10px;
 }
-
 .back-btn {
     background: #007bff;
     color: white;
@@ -25,7 +23,6 @@ body {
     display: inline-block;
     margin-top: 20px;
 }
-
 .cleanup-info {
     background: #d1ecf1;
     border: 1px solid #bee5eb;

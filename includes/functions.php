@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
+
 function convertirExcelACSVNativo($archivoExcel)
 {
     $fileExtension = strtolower(pathinfo($archivoExcel, PATHINFO_EXTENSION));
@@ -13,6 +14,7 @@ function convertirExcelACSVNativo($archivoExcel)
     }
     throw new Exception("Formato de archivo no soportado: $fileExtension");
 }
+
 function convertirXLSXACSVNativo($archivoXLSX)
 {
     if (!class_exists('ZipArchive')) {
@@ -107,6 +109,7 @@ function convertirXLSXACSVNativo($archivoXLSX)
         throw new Exception("Error convirtiendo XLSX a CSV: " . $e->getMessage());
     }
 }
+
 function obtenerNumeroColumna($cellRef)
 {
     $col = preg_replace('/[0-9]+/', '', $cellRef);
@@ -117,6 +120,7 @@ function obtenerNumeroColumna($cellRef)
     }
     return $colNum - 1;
 }
+
 function obtenerCentroCosto($ilabor, $codigo_elemento)
 {
     $database = new Database();
@@ -172,6 +176,7 @@ function obtenerCentroCosto($ilabor, $codigo_elemento)
     }
     return '1121231700';
 }
+
 function procesarInventarioIneditto($archivo_csv)
 {
     $database = new Database();
@@ -234,12 +239,13 @@ function procesarInventarioIneditto($archivo_csv)
                     $fila['ILABOR'] ?? '',
                     $fila['IRECURSO'] ?? ''
                 );
+                // Obtener siguiente número consecutivo ENTERO
                 $siguienteINUMSOP = obtenerSiguienteINUMSOP();
                 $stmt->execute([
                     ':iemp' => $fila['IEMP'] ?? '1',
                     ':fsoport' => $fila['FSOPORT'] ?? '',
                     ':itdsop' => $fila['ITDSOP'] ?? '160',
-                    ':inumsop' => $siguienteINUMSOP,
+                    ':inumsop' => $siguienteINUMSOP, // Número entero consecutivo
                     ':inventario' => $fila['INVENTARIO'] ?? '1',
                     ':irecurso' => $fila['IRECURSO'] ?? '',
                     ':iccsubcc' => $centro_costo,
@@ -272,12 +278,14 @@ function procesarInventarioIneditto($archivo_csv)
         throw new Exception("Error procesando inventario: " . $e->getMessage());
     }
 }
+
 function limpiarHeaders($headers)
 {
     return array_map(function ($header) {
         return trim(str_replace("\xEF\xBB\xBF", '', $header));
     }, $headers);
 }
+
 function procesarArchivoCSV($archivo_csv, $callback)
 {
     $fileExtension = strtolower(pathinfo($archivo_csv, PATHINFO_EXTENSION));
@@ -315,6 +323,7 @@ function procesarArchivoCSV($archivo_csv, $callback)
         throw $e;
     }
 }
+
 function importarCentrosCostos($archivo_csv)
 {
     $database = new Database();
@@ -346,6 +355,7 @@ function importarCentrosCostos($archivo_csv)
         return $importados;
     });
 }
+
 function importarElementos($archivo_csv)
 {
     $database = new Database();
@@ -404,6 +414,7 @@ function importarElementos($archivo_csv)
         return $importados;
     });
 }
+
 function obtenerEstadisticasTablaTemp()
 {
     $database = new Database();
@@ -431,16 +442,17 @@ function obtenerEstadisticasTablaTemp()
             'ilabor_vacios' => 0,
             'centros_costo_diferentes' => 0,
             'suma_cantidades' => 0,
-            'primer_inumsop' => 0,
-            'ultimo_inumsop' => 0,
-            'contador_actual' => 0,
-            'proximo_inumsop' => 1
+            'primer_inumsop' => 1,
+            'ultimo_inumsop' => 1,
+            'contador_actual' => 1,
+            'proximo_inumsop' => 2
         ];
     }
 }
+
 /**
  * 
- * @return int
+ * @return int 
  */
 function obtenerSiguienteINUMSOP()
 {
@@ -453,17 +465,17 @@ function obtenerSiguienteINUMSOP()
         $checkStmt->execute();
         $result = $checkStmt->fetch(PDO::FETCH_ASSOC);
         if (!$result) {
-            $insertQuery = "INSERT INTO contadores (nombre, valor_actual) VALUES ('INUMSOP')";
+            $insertQuery = "INSERT INTO contadores (nombre, valor_actual) VALUES ('INUMSOP', 1)";
             $insertStmt = $conn->prepare($insertQuery);
             $insertStmt->execute();
-            $valorActual = 0;
+            $valorActual = 1;
         } else {
-            $valorActual = $result['valor_actual'];
+            $valorActual = (int)$result['valor_actual'];
         }
         $updateQuery = "UPDATE contadores SET valor_actual = valor_actual + 1 WHERE nombre = 'INUMSOP'";
         $updateStmt = $conn->prepare($updateQuery);
         $updateStmt->execute();
-        $siguienteNumero = $valorActual + 1;
+        $siguienteNumero = $valorActual;
         $conn->commit();
         return $siguienteNumero;
     } catch (Exception $e) {
@@ -472,6 +484,7 @@ function obtenerSiguienteINUMSOP()
         throw new Exception("Error al obtener número consecutivo: " . $e->getMessage());
     }
 }
+
 /**
  * 
  * @return array 
@@ -490,28 +503,34 @@ function obtenerEstadoContador()
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$result) {
-            $insertQuery = "INSERT INTO contadores (nombre, valor_actual) VALUES ('INUMSOP')";
+            // Crear contador inicial
+            $insertQuery = "INSERT INTO contadores (nombre, valor_actual) VALUES ('INUMSOP', 1)";
             $insertStmt = $conn->prepare($insertQuery);
             $insertStmt->execute();
             return [
-                'valor_actual' => 0,
-                'proximo_valor' => 1,
+                'valor_actual' => 1,
+                'proximo_valor' => 2,
                 'fecha_actualizacion' => date('Y-m-d H:i:s')
             ];
         }
-        return $result;
+        return [
+            'valor_actual' => (int)$result['valor_actual'],
+            'proximo_valor' => (int)$result['proximo_valor'],
+            'fecha_actualizacion' => $result['fecha_actualizacion']
+        ];
     } catch (Exception $e) {
         error_log("Error obteniendo estado del contador: " . $e->getMessage());
         return [
-            'valor_actual' => 0,
-            'proximo_valor' => 1,
+            'valor_actual' => 1,
+            'proximo_valor' => 2,
             'fecha_actualizacion' => date('Y-m-d H:i:s')
         ];
     }
 }
+
 /**
- * 
- * @param string 
+ *
+ * @param string|int 
  * @return bool 
  */
 function existeINUMSOP($inumsop)
@@ -521,7 +540,7 @@ function existeINUMSOP($inumsop)
     try {
         $query = "SELECT COUNT(*) as existe FROM inventarios_temp WHERE INUMSOP = :inumsop";
         $stmt = $conn->prepare($query);
-        $stmt->bindParam(':inumsop', $inumsop);
+        $stmt->bindParam(':inumsop', $inumsop, PDO::PARAM_INT);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result['existe'] > 0;
@@ -530,10 +549,11 @@ function existeINUMSOP($inumsop)
         return false;
     }
 }
+
 /**
  * 
  * @param int 
- * @return bool
+ * @return bool 
  */
 function reiniciarContadorINUMSOP($nuevoValor = 1)
 {
