@@ -35,11 +35,9 @@ try {
                     MAX(INUMSOP) as ultimo_inumsop,
                     COUNT(DISTINCT INUMSOP) as inumsop_unicos
                    FROM inventarios_temp";
-
     $statsStmt = $conn->prepare($statsQuery);
     $statsStmt->execute();
     $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
-
     $distQuery = "SELECT centro_costo_asignado, COUNT(*) as cantidad_registros 
                   FROM inventarios_temp 
                   GROUP BY centro_costo_asignado 
