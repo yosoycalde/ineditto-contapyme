@@ -640,7 +640,7 @@ function existeINUMSOP($inumsop)
 }
 
 /**
- * Reinicia el 
+ * 
  * @param int 
  * @return bool
  */
