@@ -3,53 +3,41 @@ header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
-
 require_once '../config/database.php';
 require_once 'functions.php';
-
 function convertirExcelACSV($archivoExcel)
 {
     $fileExtension = strtolower(pathinfo($archivoExcel, PATHINFO_EXTENSION));
-
     if ($fileExtension === 'csv') {
         return $archivoExcel; 
     }
-
     if ($fileExtension === 'xlsx') {
         return convertirXLSXACSV($archivoExcel);
     } elseif ($fileExtension === 'xls') {
         return convertirXLSACSV($archivoExcel);
     }
-
     throw new Exception("Formato de archivo no soportado: $fileExtension");
 }
-
 function convertirXLSXACSV($archivoXLSX)
 {
     try {
         $csvPath = pathinfo($archivoXLSX, PATHINFO_DIRNAME) . '/' .
             pathinfo($archivoXLSX, PATHINFO_FILENAME) . '_converted.csv';
-
         $zip = new ZipArchive();
         if ($zip->open($archivoXLSX) !== TRUE) {
             throw new Exception("Formato de archivo no soportado: $fileExtension");
         }
-
         $sharedStrings = [];
         $worksheetData = '';
-
         if (($sharedStringsXML = $zip->getFromName('xl/sharedStrings.xml')) !== false) {
             $xml = simplexml_load_string($sharedStringsXML);
             foreach ($xml->si as $si) {
                 $sharedStrings[] = (string) $si->t;
             }
         }
-
         if (($worksheetXML = $zip->getFromName('xl/worksheets/sheet1.xml')) !== false) {
             $worksheetData = $worksheetXML;
         }
-
-        
         $zip->close();
 
         if (empty($worksheetData)) {

@@ -2,11 +2,9 @@
 header('Content-Type: application/json');
 require_once '../config/database.php';
 require_once '../config/handler.php';
-
 try {
     $database = new Database();
     $conn = $database->connect();
-
     $query = "SELECT 
                 IRECURSO as codigo_elemento,
                 ICCSUBCC as descripcion_categoria, 
@@ -19,11 +17,9 @@ try {
               FROM inventarios_temp 
               ORDER BY INUMSOP DESC
               LIMIT 15";
-
     $stmt = $conn->prepare($query);
     $stmt->execute();
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
     $statsQuery = "SELECT 
                     COUNT(*) as total_registros,
                     COUNT(CASE WHEN ILABOR IS NULL OR ILABOR = '' THEN 1 END) as registros_sin_labor,
@@ -42,23 +38,18 @@ try {
                   FROM inventarios_temp 
                   GROUP BY centro_costo_asignado 
                   ORDER BY cantidad_registros DESC";
-
     $distStmt = $conn->prepare($distQuery);
     $distStmt->execute();
     $distribucion = $distStmt->fetchAll(PDO::FETCH_ASSOC);
-
     $estadoContador = obtenerEstadoContador();
-    
     $integridadQuery = "SELECT 
                         COUNT(*) as total_registros,
                         COUNT(DISTINCT INUMSOP) as inumsop_unicos,
                         (COUNT(*) - COUNT(DISTINCT INUMSOP)) as duplicados_inumsop
                         FROM inventarios_temp";
-    
     $integridadStmt = $conn->prepare($integridadQuery);
     $integridadStmt->execute();
     $integridad = $integridadStmt->fetch(PDO::FETCH_ASSOC);
-
     echo json_encode([
         'success' => true,
         'data' => $results,
@@ -76,7 +67,6 @@ try {
             'integridad_ok' => $integridad['duplicados_inumsop'] == 1
         ]
     ]);
-
 } catch (Exception $e) {
     echo json_encode([
         'success' => false,

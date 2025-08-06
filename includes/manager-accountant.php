@@ -3,15 +3,12 @@ header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST');
 header('Access-Control-Allow-Headers: Content-Type');
-
 require_once '../config/database.php';
 require_once '../config/handler.php';
-
 function inicializarTablaContadores()
 {
     $database = new Database();
     $conn = $database->connect();
-    
     try {
         $createTableQuery = "CREATE TABLE IF NOT EXISTS contadores (
             id INT PRIMARY KEY AUTO_INCREMENT,
@@ -20,24 +17,19 @@ function inicializarTablaContadores()
             fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         )";
         $conn->exec($createTableQuery);
-        
         $insertCounterQuery = "INSERT IGNORE INTO contadores (nombre, valor_actual) VALUES ('INUMSOP')";
         $conn->exec($insertCounterQuery);
-        
         return true;
     } catch (Exception $e) {
         error_log("Error inicializando tabla contadores: " . $e->getMessage());
         return false;
     }
 }
-
 function manejarPeticion()
 {
     inicializarTablaContadores();
-    
     $metodo = $_SERVER['REQUEST_METHOD'];
     $input = json_decode(file_get_contents('php://input'), true);
-    
     switch ($metodo) {
         case 'GET':
             if (isset($_GET['action'])) {
@@ -54,7 +46,6 @@ function manejarPeticion()
                 }
             }
             return obtenerEstadoCompleto();
-            
         case 'POST':
             if (isset($input['action'])) {
                 switch ($input['action']) {
@@ -71,18 +62,15 @@ function manejarPeticion()
                 }
             }
             return ['success' => false, 'message' => 'Acción requerida para POST'];
-            
         default:
             return ['success' => false, 'message' => 'Método HTTP no soportado'];
     }
 }
-
 function obtenerEstadoCompleto()
 {
     try {
         $estadoContador = obtenerEstadoContador();
-        $estadisticasTemp = obtenerEstadisticasTablaTemp();
-        
+        $estadisticasTemp = obtenerEstadisticasTablaTemp();       
         return [
             'success' => true,
             'contador' => $estadoContador,
@@ -96,7 +84,6 @@ function obtenerEstadoCompleto()
         ];
     }
 }
-
 function obtenerProximoNumero()
 {
     try {
@@ -113,7 +100,6 @@ function obtenerProximoNumero()
         ];
     }
 }
-
 function validarNumeroUnico($numero)
 {
     try {
@@ -131,7 +117,6 @@ function validarNumeroUnico($numero)
         ];
     }
 }
-
 function reiniciarContador($nuevoValor)
 {
     try {
@@ -156,7 +141,6 @@ function reiniciarContador($nuevoValor)
         ];
     }
 }
-
 function incrementarContador()
 {
     try {
@@ -174,18 +158,15 @@ function incrementarContador()
         ];
     }
 }
-
 function establecerValorContador($valor)
 {
     $database = new Database();
-    $conn = $database->connect();
-    
+    $conn = $database->connect();   
     try {
         $query = "UPDATE contadores SET valor_actual = :valor WHERE nombre = 'INUMSOP'";
         $stmt = $conn->prepare($query);
         $stmt->bindParam(':valor', $valor, PDO::PARAM_INT);
         $stmt->execute();
-        
         return [
             'success' => true,
             'message' => "Contador establecido a $valor",
@@ -199,6 +180,5 @@ function establecerValorContador($valor)
         ];
     }
 }
-
 echo json_encode(manejarPeticion());
 ?>
