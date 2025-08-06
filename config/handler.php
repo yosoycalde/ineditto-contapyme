@@ -19,7 +19,7 @@ function obtenerSiguienteINUMSOP()
         $result = $checkStmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$result) {
-            $insertQuery = "INSERT INTO contadores (nombre, valor_actual) VALUES ('INUMSOP', 0)";
+            $insertQuery = "INSERT INTO contadores (nombre, valor_actual) VALUES ('INUMSOP')";
             $insertStmt = $conn->prepare($insertQuery);
             $insertStmt->execute();
             $valorActual = 0;
@@ -118,7 +118,7 @@ function obtenerEstadoContador()
  * @param int $nuevoValor Nuevo valor para el contador
  * @return bool True si se reinició correctamente
  */
-function reiniciarContadorINUMSOP($nuevoValor = 0)
+function reiniciarContadorINUMSOP($nuevoValor = 1)
 {
     $database = new Database();
     $conn = $database->connect();
@@ -648,8 +648,8 @@ function obtenerEstadisticasTablaTemp()
             'ilabor_vacios' => 0,
             'centros_costo_diferentes' => 0,
             'suma_cantidades' => 0,
-            'primer_inumsop' => 0,
-            'ultimo_inumsop' => 0,
+            'primer_inumsop' => 1,
+            'ultimo_inumsop' => 1,
             'contador_actual' => 0,
             'proximo_inumsop' => 1
         ];

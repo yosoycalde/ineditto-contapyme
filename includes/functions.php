@@ -293,7 +293,7 @@ function procesarInventarioIneditto($archivo_csv)
                     ':iemp' => $fila['IEMP'] ?? '1',
                     ':fsoport' => $fila['FSOPORT'] ?? '',
                     ':itdsop' => $fila['ITDSOP'] ?? '160',
-                    ':inumsop' => $siguienteINUMSOP, // *** USAR CONSECUTIVO AUTOMÁTICO ***
+                    ':inumsop' => $siguienteINUMSOP,
                     ':inventario' => $fila['INVENTARIO'] ?? '1',
                     ':irecurso' => $fila['IRECURSO'] ?? '',
                     ':iccsubcc' => $centro_costo,
@@ -545,7 +545,7 @@ function obtenerSiguienteINUMSOP()
         $result = $checkStmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$result) {
-            $insertQuery = "INSERT INTO contadores (nombre, valor_actual) VALUES ('INUMSOP', 0)";
+            $insertQuery = "INSERT INTO contadores (nombre, valor_actual) VALUES ('INUMSOP')";
             $insertStmt = $conn->prepare($insertQuery);
             $insertStmt->execute();
             $valorActual = 0;
@@ -591,7 +591,7 @@ function obtenerEstadoContador()
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$result) {
-            $insertQuery = "INSERT INTO contadores (nombre, valor_actual) VALUES ('INUMSOP', 0)";
+            $insertQuery = "INSERT INTO contadores (nombre, valor_actual) VALUES ('INUMSOP')";
             $insertStmt = $conn->prepare($insertQuery);
             $insertStmt->execute();
             
@@ -644,7 +644,7 @@ function existeINUMSOP($inumsop)
  * @param int 
  * @return bool
  */
-function reiniciarContadorINUMSOP($nuevoValor = 0)
+function reiniciarContadorINUMSOP($nuevoValor = 1)
 {
     $database = new Database();
     $conn = $database->connect();

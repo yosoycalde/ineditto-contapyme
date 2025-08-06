@@ -60,7 +60,7 @@ try {
             $row['IEMP'] ?? '',
             $row['FSOPORT'] ?? '',
             $row['ITDSOP'] ?? '',
-            $row['INUMSOP'] ?? '0',
+            $row['INUMSOP'] ?? '',
             $row['INVENTARIO'] ?? '',
             $row['IRECURSO'] ?? '',
             $row['ICCSUBCC'] ?? '',

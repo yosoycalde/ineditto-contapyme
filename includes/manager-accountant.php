@@ -21,7 +21,7 @@ function inicializarTablaContadores()
         )";
         $conn->exec($createTableQuery);
         
-        $insertCounterQuery = "INSERT IGNORE INTO contadores (nombre, valor_actual) VALUES ('INUMSOP' 0)";
+        $insertCounterQuery = "INSERT IGNORE INTO contadores (nombre, valor_actual) VALUES ('INUMSOP')";
         $conn->exec($insertCounterQuery);
         
         return true;
