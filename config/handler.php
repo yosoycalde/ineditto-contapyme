@@ -446,17 +446,13 @@ function procesarInventarioIneditto($archivo_csv)
                 ]);
 
                 $procesados++;
-
             } catch (Exception $e) {
                 error_log("Error procesando fila " . ($index + 2) . ": " . $e->getMessage() . " - Datos: " . print_r($fila, true));
             }
         }
-
         $estadoContadorFinal = obtenerEstadoContador();
         error_log("Contador INUMSOP - Inicial: " . $estadoContadorInicial['valor_actual'] . ", Final: " . $estadoContadorFinal['valor_actual']);
-
         return $procesados;
-
     } catch (Exception $e) {
         if (isset($handle) && is_resource($handle)) {
             fclose($handle);
@@ -467,50 +463,39 @@ function procesarInventarioIneditto($archivo_csv)
         throw new Exception("Error procesando inventario: " . $e->getMessage());
     }
 }
-
 function limpiarHeaders($headers)
 {
     return array_map(function ($header) {
         return trim(str_replace("\xEF\xBB\xBF", '', $header));
     }, $headers);
 }
-
 function procesarArchivoCSV($archivo_csv, $callback)
 {
     $fileExtension = strtolower(pathinfo($archivo_csv, PATHINFO_EXTENSION));
     $archivoAProcesar = $archivo_csv;
-
     if (in_array($fileExtension, ['xlsx', 'xls'])) {
         $archivoAProcesar = convertirExcelACSVNativo($archivo_csv);
     }
-
     $handle = null;
     try {
         if (!file_exists($archivoAProcesar)) {
             throw new Exception("Archivo no encontrado: $archivoAProcesar");
         }
-
         $handle = fopen($archivoAProcesar, "r");
         if ($handle === FALSE) {
             throw new Exception("No se pudo abrir el archivo");
         }
-
         $headers = fgetcsv($handle, 1000, ",");
         if ($headers === FALSE) {
             throw new Exception("No se pudieron leer los headers del archivo");
         }
-
         $headers = limpiarHeaders($headers);
         $importados = $callback($handle, $headers);
-
         fclose($handle);
-
         if ($archivoAProcesar !== $archivo_csv && file_exists($archivoAProcesar)) {
             unlink($archivoAProcesar);
         }
-
         return $importados;
-
     } catch (Exception $e) {
         if ($handle && is_resource($handle)) {
             fclose($handle);
@@ -521,25 +506,20 @@ function procesarArchivoCSV($archivo_csv, $callback)
         throw $e;
     }
 }
-
 function importarCentrosCostos($archivo_csv)
 {
     $database = new Database();
     $conn = $database->connect();
-
     return procesarArchivoCSV($archivo_csv, function($handle, $headers) use ($conn) {
         $query = "INSERT INTO centros_costos (codigo, nombre) VALUES (:codigo, :nombre)
                   ON DUPLICATE KEY UPDATE nombre = :nombre2";
         $stmt = $conn->prepare($query);
         $importados = 0;
-
         while (($row = fgetcsv($handle, 1000, ",")) !== FALSE) {
             if (count($row) === count($headers)) {
                 $data = array_combine($headers, $row);
-
                 $codigo = trim($data['Codigo'] ?? $data['codigo'] ?? '');
                 $nombre = trim($data['Nombre'] ?? $data['nombre'] ?? '');
-
                 if (!empty($codigo) && !empty($nombre)) {
                     try {
                         $stmt->execute([
@@ -554,16 +534,13 @@ function importarCentrosCostos($archivo_csv)
                 }
             }
         }
-
         return $importados;
     });
 }
-
 function importarElementos($archivo_csv)
 {
     $database = new Database();
     $conn = $database->connect();
-
     return procesarArchivoCSV($archivo_csv, function($handle, $headers) use ($conn) {
         $query = "INSERT INTO elementos 
                   (codigo, referencia, descripcion, centro_costo_1, centro_costo_2, centro_costo_3, centro_costo_4, centro_costo_5) 
@@ -576,18 +553,14 @@ function importarElementos($archivo_csv)
                   centro_costo_3 = :cc3_2,
                   centro_costo_4 = :cc4_2,
                   centro_costo_5 = :cc5_2";
-
         $stmt = $conn->prepare($query);
         $importados = 0;
-
         while (($row = fgetcsv($handle, 1000, ",")) !== FALSE) {
             if (count($row) === count($headers)) {
                 $data = array_combine($headers, $row);
-
                 $codigo = trim($data['Cód. Artículo'] ?? $data['codigo'] ?? '');
                 $referencia = trim($data['Referencia'] ?? $data['referencia'] ?? '');
                 $descripcion = trim($data['Descripción'] ?? $data['descripcion'] ?? '');
-
                 if (!empty($codigo)) {
                     try {
                         $cc1 = !empty($data['Centro Costos 1']) ? trim($data['Centro Costos 1']) : null;
@@ -595,7 +568,6 @@ function importarElementos($archivo_csv)
                         $cc3 = !empty($data['Centro Costos 3']) ? trim($data['Centro Costos 3']) : null;
                         $cc4 = !empty($data['Centro Costos 4']) ? trim($data['Centro Costos 4']) : null;
                         $cc5 = !empty($data['Centro Costos 5']) ? trim($data['Centro Costos 5']) : null;
-
                         $stmt->execute([
                             ':codigo' => $codigo,
                             ':referencia' => $referencia,
@@ -612,16 +584,13 @@ function importarElementos($archivo_csv)
                 }
             }
         }
-
         return $importados;
     });
 }
-
 function obtenerEstadisticasTablaTemp()
 {
     $database = new Database();
     $conn = $database->connect();
-
     try {
         $query = "SELECT 
                     COUNT(*) as total_registros,
@@ -631,15 +600,12 @@ function obtenerEstadisticasTablaTemp()
                     MIN(INUMSOP) as primer_inumsop,
                     MAX(INUMSOP) as ultimo_inumsop
                   FROM inventarios_temp";
-
         $stmt = $conn->prepare($query);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        
         $estadoContador = obtenerEstadoContador();
         $result['contador_actual'] = $estadoContador['valor_actual'];
         $result['proximo_inumsop'] = $estadoContador['proximo_valor'];
-        
         return $result;
     } catch (Exception $e) {
         error_log("Error obteniendo estadísticas: " . $e->getMessage());
