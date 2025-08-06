@@ -21,13 +21,11 @@
                     <button type="submit">Procesar Archivo</button>
                 </div>
             </form>
-
             <div class="format-info">
                 <h3>Formato esperado del archivo Ineditto:</h3>
                 <div class="format-description">
                     <p><strong>Columnas requeridas:</strong></p>
                     <code>IEMP, FSOPORT, ITDSOP, INUMSOP, INVENTARIO, IRECURSO, ICCSUBCC, ILABOR, QCANTLUN, QCANTMAR, QCANTMIE, QCANTJUE, QCANTVIE, QCANTSAB, QCANTDOM, SOBSERVAC</code>
-
                     <p><strong>Formatos aceptados:</strong></p>
                     <ul>
                         <li><strong>CSV:</strong> Archivo de texto con datos separados por comas</li>
@@ -37,7 +35,6 @@
                 </div>
             </div>
         </div>
-
         <div class="results-section" id="results" style="display: none;">
             <h2> Resultados del Procesamiento</h2>
             <div id="processInfo"></div>
@@ -47,19 +44,15 @@
                 </button>
             </div>
         </div>
-
         <div class="preview-section" id="preview" style="display: none;">
             <h2> Vista Previa Formato ContaPyme</h2>
-
             <div class="format-description">
                 <p><strong>Formato de salida ContaPyme:</strong></p>
                 <code>IEMP, FSOPORT, ITDSOP, INUMSOP, INVENTARIO, IRECURSO, ICCSUBCC, ILABOR, QCANTLUN, QCANTMAR, QCANTMIE, QCANTJUE, QCANTVIE, QCANTSAB, QCANTDOM, SOBSERVAC</code>
                 <p class="note"><em>Nota: Los campos ILABOR y días de la semana (MAR-DOM) se envían vacíos según
                         especificación. La salida siempre es en formato CSV.</em></p>
             </div>
-
             <div id="distribucion" class="distribucion-section"></div>
-
             <div class="table-container">
                 <table id="dataTable">
                     <thead id="tableHead"></thead>
@@ -68,7 +61,6 @@
             </div>
         </div>
     </div>
-
     <script src="js/main.js"></script>
 </body>
 

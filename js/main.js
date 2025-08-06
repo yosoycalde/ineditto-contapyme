@@ -11,22 +11,17 @@ document.addEventListener('DOMContentLoaded', function () {
         cleanupBtn.style.display = 'none';
         cleanupBtn.style.marginLeft = '15px';
         actionButtons.appendChild(cleanupBtn);
-
         cleanupBtn.addEventListener('click', function () {
             if (confirm('¿Está seguro de que desea eliminar todos los archivos temporales y datos procesados?')) {
                 realizarLimpiezaManual();
             }
         });
     }
-
     function importarArchivo(action, file, tipo) {
         const formData = new FormData();
         formData.append('action', action);
-
         const fileExt = file.name.split('.').pop().toUpperCase();
-
         showMessage(`Procesando archivo ${fileExt} - Importando ${tipo}...`, 'info');
-
         fetch('includes/upload_handler.php', {
             method: 'POST',
             body: formData
@@ -44,38 +39,29 @@ document.addEventListener('DOMContentLoaded', function () {
                 showMessage(` Error de conexión al importar ${tipo}`, 'error');
             });
     }
-
     uploadForm.addEventListener('submit', function (e) {
         e.preventDefault();
-
         const formData = new FormData();
         const fileInput = document.getElementById('csvFile');
-
         if (fileInput.files.length === 0) {
             showMessage('Por favor selecciona un archivo de inventario', 'error');
             return;
         }
-
         const file = fileInput.files[0];
         const fileExt = file.name.split('.').pop().toLowerCase();
-
         if (!['csv', 'xlsx', 'xls'].includes(fileExt)) {
             showMessage('Solo se permiten archivos CSV, XLSX o XLS para inventarios', 'error');
             return;
         }
-
         if (fileExt === 'xls') {
             if (!confirm('Los archivos XLS pueden tener problemas de compatibilidad. ¿Desea continuar? Se recomienda usar XLSX o CSV.')) {
                 return;
             }
         }
-
         formData.append('csvFile', file);
-
         const processInfo = document.getElementById('processInfo');
         processInfo.innerHTML = `<p class="info"> Procesando archivo ${fileExt.toUpperCase()} de inventario...</p>`;
         resultsSection.style.display = 'block';
-
         fetch('includes/upload_handler.php', {
             method: 'POST',
             body: formData
@@ -108,15 +94,11 @@ document.addEventListener('DOMContentLoaded', function () {
                             <p> <strong>Importante:</strong> Después de descargar el archivo CSV, todos los archivos temporales y datos procesados se eliminarán automáticamente del servidor.</p>
                         </div>
                     </div>`;
-
                     downloadBtn.style.display = 'inline-block';
-
-                    // boton de limpieza manual
                     const cleanupBtn = document.getElementById('cleanupBtn');
                     if (cleanupBtn) {
                         cleanupBtn.style.display = 'inline-block';
                     }
-
                     mostrarVistPrevia();
                 } else {
                     processInfo.innerHTML = `<p class="error"> Error: ${data.message}</p>`;
@@ -127,26 +109,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 processInfo.innerHTML = '<p class="error"> Error al procesar el archivo</p>';
             });
     });
-
     downloadBtn.addEventListener('click', function () {
         showMessage(' Iniciando descarga y limpieza automática...', 'info');
-
         const iframe = document.createElement('iframe');
         iframe.style.display = 'none';
         iframe.src = 'includes/download_csv.php';
         document.body.appendChild(iframe);
-
         setTimeout(() => {
             verificarLimpiezaCompletada();
         }, 2000);
-
         setTimeout(() => {
             if (iframe.parentNode) {
                 iframe.parentNode.removeChild(iframe);
             }
         }, 5000);
     });
-
     function verificarLimpiezaCompletada() {
         fetch('includes/get_preview.php')
             .then(response => response.json())
@@ -170,23 +147,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 resetearInterfaz();
             });
     }
-
     function resetearInterfaz() {
         downloadBtn.style.display = 'none';
         const cleanupBtn = document.getElementById('cleanupBtn');
         if (cleanupBtn) {
             cleanupBtn.style.display = 'none';
         }
-
         resultsSection.style.display = 'none';
         previewSection.style.display = 'none';
-
         document.getElementById('csvFile').value = '';
     }
-
     function realizarLimpiezaManual() {
         showMessage(' Realizando limpieza manual...', 'info');
-
         fetch('includes/cleanup.php', {
             method: 'POST'
         })
@@ -204,7 +176,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 showMessage(' Error de conexión durante la limpieza', 'error');
             });
     }
-
     function mostrarVistPrevia() {
         fetch('includes/get_preview.php')
             .then(response => response.json())
@@ -212,10 +183,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.success) {
                     const tableHead = document.getElementById('tableHead');
                     const tableBody = document.getElementById('tableBody');
-
                     tableHead.innerHTML = '';
                     tableBody.innerHTML = '';
-
                     const headerRow = document.createElement('tr');
                     ['Código Elemento', 'Categoría/Descripción', 'Cantidad', 'Fecha', 'Centro Costo', 'Labor Original', 'Observaciones'].forEach(header => {
                         const th = document.createElement('th');
@@ -223,7 +192,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         headerRow.appendChild(th);
                     });
                     tableHead.appendChild(headerRow);
-
                     data.data.forEach(row => {
                         const tr = document.createElement('tr');
                         Object.values(row).forEach(cell => {
@@ -233,7 +201,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         });
                         tableBody.appendChild(tr);
                     });
-
                     if (data.distribucion_centros_costo) {
                         const distribucionDiv = document.getElementById('distribucion');
                         if (distribucionDiv) {
@@ -245,7 +212,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             distribucionDiv.innerHTML = distribucionHTML;
                         }
                     }
-
                     previewSection.style.display = 'block';
                 }
             })
@@ -253,7 +219,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error('Error al obtener vista previa:', error);
             });
     }
-
     function showMessage(message, type) {
         let messageDiv = document.getElementById('globalMessage');
         if (!messageDiv) {
@@ -274,7 +239,6 @@ document.addEventListener('DOMContentLoaded', function () {
             `;
             document.body.appendChild(messageDiv);
         }
-
         switch (type) {
             case 'success':
                 messageDiv.style.backgroundColor = '#28a745';
@@ -288,11 +252,9 @@ document.addEventListener('DOMContentLoaded', function () {
             default:
                 messageDiv.style.backgroundColor = '#6c757d';
         }
-
         messageDiv.textContent = message;
         messageDiv.style.display = 'block';
         messageDiv.style.opacity = '1';
-
         setTimeout(() => {
             messageDiv.style.opacity = '0';
             setTimeout(() => {
@@ -300,11 +262,8 @@ document.addEventListener('DOMContentLoaded', function () {
             }, 300);
         }, 6000);
     }
-
-
     const csvFileInput = document.getElementById('csvFile');
     if (csvFileInput) {
         csvFileInput.accept = '.csv,.xlsx,.xls';
     }
 });
-
