@@ -395,15 +395,12 @@ function procesarInventarioIneditto($archivo_csv)
             }
         }
         fclose($handle);
-        
         if ($archivoAProcesar !== $archivo_csv && file_exists($archivoAProcesar)) {
             unlink($archivoAProcesar);
         }
-
         if (empty($datos)) {
             throw new Exception("No se encontraron datos válidos en el archivo");
         }
-
         $query = "INSERT INTO inventarios_temp 
                   (IEMP, FSOPORT, ITDSOP, INUMSOP, INVENTARIO, IRECURSO, ICCSUBCC, ILABOR,
                    QCANTLUN, QCANTMAR, QCANTMIE, QCANTJUE, QCANTVIE, QCANTSAB, QCANTDOM, 
@@ -411,20 +408,16 @@ function procesarInventarioIneditto($archivo_csv)
                   VALUES (:iemp, :fsoport, :itdsop, :inumsop, :inventario, :irecurso, :iccsubcc, :ilabor,
                           :qcantlun, :qcantmar, :qcantmie, :qcantjue, :qcantvie, :qcantsab, :qcantdom,
                           :sobservac, :centro_costo)";
-
         $stmt = $conn->prepare($query);
         $procesados = 0;
         $estadoContadorInicial = obtenerEstadoContador();
-
         foreach ($datos as $index => $fila) {
             try {
                 $centro_costo = obtenerCentroCosto(
                     $fila['ILABOR'] ?? '',
                     $fila['IRECURSO'] ?? ''
                 );
-
                 $siguienteINUMSOP = obtenerSiguienteINUMSOP();
-
                 $stmt->execute([
                     ':iemp' => $fila['IEMP'] ?? '1',
                     ':fsoport' => $fila['FSOPORT'] ?? '',
@@ -444,7 +437,6 @@ function procesarInventarioIneditto($archivo_csv)
                     ':sobservac' => $fila['SOBSERVAC'] ?? '',
                     ':centro_costo' => $centro_costo
                 ]);
-
                 $procesados++;
             } catch (Exception $e) {
                 error_log("Error procesando fila " . ($index + 2) . ": " . $e->getMessage() . " - Datos: " . print_r($fila, true));
