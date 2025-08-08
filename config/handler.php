@@ -483,7 +483,7 @@ function procesarArchivoCSV($archivo_csv, $callback)
     if (in_array($fileExtension, ['xlsx', 'xls'])) {
         $archivoAProcesar = convertirExcelACSVNativo($archivo_csv);
     }
-    $handle = null;
+    $handle = null; 
     try {
         if (!file_exists($archivoAProcesar)) {
             throw new Exception("Archivo no encontrado: $archivoAProcesar");
