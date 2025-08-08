@@ -73,4 +73,4 @@ try {
         'message' => 'Error al obtener vista previa: ' . $e->getMessage()
     ]);
 }
-?>
+?>  
