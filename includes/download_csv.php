@@ -29,18 +29,14 @@ try {
     if (empty($resultados)) {
         throw new Exception("No se encontraron datos para procesar");
     }
-    
-    // Limpiar buffer de salida
+
     ob_clean();
     ob_start();
-    
-    // Crear archivo CSV
+
     $csvOutput = fopen('php://output', 'w');
-    
-    // Agregar BOM UTF-8
+
     fprintf($csvOutput, chr(0xEF) . chr(0xBB) . chr(0xBF));
     
-    // Headers del CSV
     $headers = [
         'IEMP',
         'FSOPORT', 
@@ -62,19 +58,18 @@ try {
     
     fputcsv($csvOutput, $headers);
     
-    // Escribir los datos - CORRECCIÓN: Usar INUMSOP de la base de datos
     foreach ($resultados as $row) {
         $csvRow = [
             $row['IEMP'] ?? '',
             $row['FSOPORT'] ?? '',
             $row['ITDSOP'] ?? '',
-            (int)$row['INUMSOP'], // ASEGURAR QUE SEA ENTERO
+            (int)$row['INUMSOP'],
             $row['INVENTARIO'] ?? '',
             $row['IRECURSO'] ?? '',
             $row['ICCSUBCC'] ?? '',
-            '', // ILABOR vacío según el formato requerido
+            '', 
             $row['QCANTLUN'] ?? '',
-            '', // Campos de otros días vacíos según formato
+            '',
             '',
             '',
             '',
@@ -89,11 +84,9 @@ try {
     fclose($csvOutput);
     $csvContent = ob_get_contents();
     ob_end_clean();
-    
-    // Realizar limpieza automática después de generar el CSV
+
     realizarLimpiezaCompleta($conn);
-    
-    // Headers para descarga
+
     $filename = 'contapyme_' . date('Y-m-d_H-i-s') . '.csv';
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="' . $filename . '"');
@@ -113,13 +106,11 @@ try {
 function realizarLimpiezaCompleta($conn)
 {
     try {
-        // Eliminar registros de la tabla temporal
         $deleteQuery = "DELETE FROM inventarios_temp";
         $deleteStmt = $conn->prepare($deleteQuery);
         $deleteStmt->execute();
         $registrosEliminados = $deleteStmt->rowCount();
         
-        // Eliminar archivos temporales
         $uploadDir = '../uploads/';
         $archivosEliminados = 0;
         
