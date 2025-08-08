@@ -64,7 +64,7 @@ function realizarLimpiezaForzada()
                         $archivosEliminados++;
                     }
                 }
-            }
+            }   
         }
         return [
             'success' => true,
