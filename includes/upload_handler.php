@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $uploadPath = $uploadDir . $fileName;
             if (!move_uploaded_file($file['tmp_name'], $uploadPath)) {
                 throw new Exception('Tenemos problemas en subir el archivo (Verificalo):');
-            }
+            }   
             try {
                 $csvPath = convertirExcelACSV($uploadPath);
                 $importados = importarCentrosCostos($csvPath);
