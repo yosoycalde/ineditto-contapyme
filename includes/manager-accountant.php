@@ -177,7 +177,7 @@ function establecerValorContador($valor)
         return [
             'success' => false,
             'message' => 'Error estableciendo valor del contador: ' . $e->getMessage()
-        ];
+        ];  
     }
 }
 echo json_encode(manejarPeticion());
