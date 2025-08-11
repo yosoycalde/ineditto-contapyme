@@ -241,16 +241,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         switch (type) {
             case 'success':
-                messageDiv.style.backgroundColor = '#28a745';
+                messageDiv.style.backgroundColor = '#00b92bff';
                 break;
             case 'error':
-                messageDiv.style.backgroundColor = '#dc3545';
+                messageDiv.style.backgroundColor = '#ff0000ff';
                 break;
             case 'info':
-                messageDiv.style.backgroundColor = '#17a2b8';
+                messageDiv.style.backgroundColor = '#00eeffff';
                 break;
             default:
-                messageDiv.style.backgroundColor = '#6c757d';
+                messageDiv.style.backgroundColor = '#575757ff';
         }
         messageDiv.textContent = message;
         messageDiv.style.display = 'block';
