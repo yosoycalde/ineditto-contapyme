@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         messageDiv.textContent = message;
         messageDiv.style.display = 'block';
-        messageDiv.style.opacity = '1';
+        messageDiv.style.opacity = '1';    
         setTimeout(() => {
             messageDiv.style.opacity = '0';
             setTimeout(() => {
