@@ -126,10 +126,15 @@ function obtenerCentroCosto($ilabor, $codigo_elemento)
     $database = new Database();
     $conn = $database->connect();
     $mapeoIlabor = [
-        'PERIODICOS' => '11212317002',
-        'PULICOMERCIALES' => '11212317003',
+        'PERIODICOS' => '11212117001',
+        'PULICOMERCIALES' => '11212417001',
         'REVISTAS' => '11212317001',
-        'PLEGADIZAS' => '11212317004'
+        'PLEGADIZAS' => '11212517001',
+        'LIBROS' => '11212217001',
+        'CIRCULACION' => '11211217001',
+        'MANTENIMIENTO' => '11216317001',
+        'ADM-RECURSOS HUMANOS' => '11216117001'
+
     ];
     if (!empty(trim($ilabor))) {
         $ilaborUpper = strtoupper(trim($ilabor));
