@@ -324,7 +324,7 @@ function obtenerCentroCosto($ilabor, $codigo_elemento)
         } catch (Exception $e) {
             error_log("Error buscando centro de costo por ILABOR: " . $e->getMessage());
         }
-    }
+    }    
 
     $mapeoElemento = [
         '72312' => '11212317005',
