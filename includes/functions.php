@@ -381,8 +381,6 @@ function obtenerCentroCosto($ilabor, $codigo_elemento)
         '74201' => '11212517001',
         '74202' => '11212517001',
         '74204' => '11212517001',
-
-
     ];
     if (!empty($codigo_elemento) && isset($mapeoElemento[$codigo_elemento])) {
         return $mapeoElemento[$codigo_elemento];
