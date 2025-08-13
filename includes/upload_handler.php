@@ -203,4 +203,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'message' => 'Método no permitido. Se requiere POST.'
     ]);
 }
-?>
+?> 

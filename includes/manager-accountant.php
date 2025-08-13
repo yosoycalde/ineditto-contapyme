@@ -181,4 +181,4 @@ function establecerValorContador($valor)
     }
 }
 echo json_encode(manejarPeticion());
-?>
+?> 

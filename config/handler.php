@@ -862,4 +862,4 @@ function obtenerEstadisticasTablaTemp()
         ];
     }
 }
-?>
+?> 

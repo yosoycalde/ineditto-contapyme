@@ -104,7 +104,7 @@ function procesarInventarioIneditto($archivo_csv) {
     //    - Genera INUMSOP consecutivo
     //    - Inserta en tabla temporal
     // 6. Retorna cantidad procesada
-}
+} 
 ```
 
 ## 4. Funciones de Importación

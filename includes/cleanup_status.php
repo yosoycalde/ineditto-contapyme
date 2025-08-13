@@ -89,4 +89,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         'message' => 'Método no permitido'
     ]);
 }
-?>
+?> 
