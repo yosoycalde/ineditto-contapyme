@@ -22,7 +22,7 @@ class Database {
         $this->conn = new PDO("mysql:host=...", $this->username, $this->password);
         return $this->conn;
     }
-}
+} 
 ```
 
 **Función**: Proporciona conexión a la base de datos MySQL usando PDO.

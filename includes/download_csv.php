@@ -130,7 +130,7 @@ function realizarLimpiezaCompleta($conn)
                     }
                 }
             }
-        }
+        } 
         
         error_log("Limpieza completada: $archivosEliminados archivos y $registrosEliminados registros eliminados");
 

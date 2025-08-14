@@ -340,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const style = document.createElement('style');
     style.textContent = `
         .day-distribution {
-            margin: 15px 0;
+            margin: 15px 0; 
             padding: 15px;
             background: #f0f8ff;
             border-radius: 8px;

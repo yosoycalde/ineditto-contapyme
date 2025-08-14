@@ -138,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($csvPath !== $uploadPath && file_exists($csvPath)) {
                     unlink($csvPath);
                 }
-                echo json_encode([
+                echo json_encode([ 
                     'success' => true,
                     'records' => $importados,
                     'message' => "Elementos importados correctamente desde archivo {$fileExtension}"

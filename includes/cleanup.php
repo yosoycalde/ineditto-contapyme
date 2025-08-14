@@ -20,7 +20,7 @@ function limpiarArchivosTemporales() {
             if (unlink($rutaArchivo)) {
                 $archivosEliminados++;
             }
-        }
+        } 
     }
     return $archivosEliminados;
 }

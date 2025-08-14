@@ -4,7 +4,7 @@ setTimeout(function () {
         .then(data => {
             if (data.success) {
                 console.log(' Limpieza automática completada');
-            }
+            } 
         }).catch(error => {
             console.log(' Error en limpieza automática:', error);
         });

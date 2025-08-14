@@ -157,7 +157,7 @@ function incrementarContador()
             'message' => 'Error incrementando contador: ' . $e->getMessage()
         ];
     }
-}
+} 
 function establecerValorContador($valor)
 {
     $database = new Database();

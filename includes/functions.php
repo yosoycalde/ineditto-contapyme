@@ -913,6 +913,6 @@ function reiniciarContadorINUMSOP($nuevoValor = 1)
     } catch (Exception $e) {
         error_log("Error reiniciando contador INUMSOP: " . $e->getMessage());
         return false;
-    }
+    } 
 }
 ?>

@@ -11,7 +11,7 @@ function obtenerSiguienteINUMSOP()
     $conn = $database->connect();
     
     try {
-        $conn->beginTransaction();
+        $conn->beginTransaction(); 
         
         $checkQuery = "SELECT valor_actual FROM contadores WHERE nombre = 'INUMSOP'";
         $checkStmt = $conn->prepare($checkQuery);
