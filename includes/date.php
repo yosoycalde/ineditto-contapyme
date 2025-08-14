@@ -1,0 +1,4 @@
+<?php
+$fecha = $fila['FSOPORT'] ?? '' ;
+
+?>

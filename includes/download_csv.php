@@ -21,6 +21,7 @@ try {
                      centro_costo_asignado as ICCSUBCC, ILABOR, QCANTLUN, QCANTMAR, 
                      QCANTMIE, QCANTJUE, QCANTVIE, QCANTSAB, QCANTDOM, SOBSERVAC 
               FROM inventarios_temp 
+              WHERE INVENTARIO != '6'
               ORDER BY INUMSOP ASC";
     $stmt = $conn->prepare($query);
     $stmt->execute();
@@ -141,4 +142,4 @@ function mostrarErrorDescarga($mensaje)
 {
     include __DIR__ . "/../config/error.html";
 }
-?> 
+?>
