@@ -1,4 +1,10 @@
 <?php
-$fecha = $fila['FSOPORT'] ?? '' ;
+$dia = date('N', strtotime($fecha));
+
+
+
+
+
+
 
 ?>

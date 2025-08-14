@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         formData.append('csvFile', file);
         const processInfo = document.getElementById('processInfo');
-        processInfo.innerHTML = `<p class="info"> Procesando archivo ${fileExt.toUpperCase()} de inventario...</p>`;
+        processInfo.innerHTML = `<p class="info"> Procesando archivo ${fileExt.toUpperCase()} de inventario y distribuyendo cantidades por día de semana...</p>`;
         resultsSection.style.display = 'block';
         fetch('includes/upload_handler.php', {
             method: 'POST',
@@ -70,6 +70,27 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(data => {
                 if (data.success) {
                     const stats = data.statistics;
+
+                    // Crear estadísticas de distribución por día de semana
+                    let distribucionDias = '';
+                    if (stats.registros_lunes > 0 || stats.registros_martes > 0 || stats.registros_miercoles > 0 ||
+                        stats.registros_jueves > 0 || stats.registros_viernes > 0 || stats.registros_sabado > 0 ||
+                        stats.registros_domingo > 0) {
+                        distribucionDias = `
+                            <div class="day-distribution">
+                                <h4>📅 Distribución por día de semana:</h4>
+                                <div class="day-stats">
+                                    <span class="day-stat">Lunes: ${stats.registros_lunes || 0}</span>
+                                    <span class="day-stat">Martes: ${stats.registros_martes || 0}</span>
+                                    <span class="day-stat">Miércoles: ${stats.registros_miercoles || 0}</span>
+                                    <span class="day-stat">Jueves: ${stats.registros_jueves || 0}</span>
+                                    <span class="day-stat">Viernes: ${stats.registros_viernes || 0}</span>
+                                    <span class="day-stat">Sábado: ${stats.registros_sabado || 0}</span>
+                                    <span class="day-stat">Domingo: ${stats.registros_domingo || 0}</span>
+                                </div>
+                            </div>`;
+                    }
+
                     processInfo.innerHTML = `
                     <div class="success">
                         <h3> ${data.message}</h3>
@@ -90,8 +111,9 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <strong>Suma total cantidades:</strong> ${parseFloat(stats.suma_cantidades || 0).toFixed(2)}
                             </div>
                         </div>
+                        ${distribucionDias}
                         <div class="info" style="margin-top: 15px;">
-                            <p> <strong>Importante:</strong> Después de descargar el archivo CSV, todos los archivos temporales y datos procesados se eliminarán automáticamente del servidor.</p>
+                            <p> <strong>Importante:</strong> Las cantidades se han distribuido automáticamente según el día de la semana correspondiente a la fecha FSOPORT. Después de descargar el archivo CSV, todos los archivos temporales y datos procesados se eliminarán automáticamente del servidor.</p>
                         </div>
                     </div>`;
                     downloadBtn.style.display = 'inline-block';
@@ -186,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     tableHead.innerHTML = '';
                     tableBody.innerHTML = '';
                     const headerRow = document.createElement('tr');
-                    ['Código Elemento', 'Categoría/Descripción', 'Cantidad', 'Fecha', 'Centro Costo', 'Labor Original', 'Observaciones'].forEach(header => {
+                    ['Código Elemento', 'Categoría/Descripción', 'Cantidad', 'Fecha', 'Centro Costo', 'Labor Original', 'Observaciones', 'Día Semana'].forEach(header => {
                         const th = document.createElement('th');
                         th.textContent = header;
                         headerRow.appendChild(th);
@@ -194,11 +216,36 @@ document.addEventListener('DOMContentLoaded', function () {
                     tableHead.appendChild(headerRow);
                     data.data.forEach(row => {
                         const tr = document.createElement('tr');
+
+                        // Calcular qué día de la semana corresponde basado en las cantidades
+                        let diaSemana = '';
+                        if (parseFloat(row.cantidad) > 0) {
+                            // Intentar determinar el día basado en la fecha
+                            if (row.fecha_movimiento) {
+                                try {
+                                    const fecha = new Date(row.fecha_movimiento);
+                                    const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+                                    diaSemana = dias[fecha.getDay()] || '';
+                                } catch (e) {
+                                    diaSemana = 'N/A';
+                                }
+                            }
+                        }
+
+                        // Agregar las celdas originales
                         Object.values(row).forEach(cell => {
                             const td = document.createElement('td');
                             td.textContent = cell || '';
                             tr.appendChild(td);
                         });
+
+                        // Agregar celda de día de semana
+                        const tdDia = document.createElement('td');
+                        tdDia.textContent = diaSemana;
+                        tdDia.style.fontWeight = 'bold';
+                        tdDia.style.color = '#2196F3';
+                        tr.appendChild(tdDia);
+
                         tableBody.appendChild(tr);
                     });
                     if (data.distribucion_centros_costo) {
@@ -209,6 +256,28 @@ document.addEventListener('DOMContentLoaded', function () {
                                 distribucionHTML += `<li><strong>${item.centro_costo_asignado}:</strong> ${item.cantidad_registros} registros</li>`;
                             });
                             distribucionHTML += '</ul>';
+
+                            // Agregar información sobre distribución por días
+                            if (data.statistics) {
+                                distribucionHTML += '<h4> Distribución por Día de Semana:</h4><div class="day-distribution-preview">';
+                                const diasSemana = [
+                                    { nombre: 'Lunes', cantidad: data.statistics.registros_lunes || 0 },
+                                    { nombre: 'Martes', cantidad: data.statistics.registros_martes || 0 },
+                                    { nombre: 'Miércoles', cantidad: data.statistics.registros_miercoles || 0 },
+                                    { nombre: 'Jueves', cantidad: data.statistics.registros_jueves || 0 },
+                                    { nombre: 'Viernes', cantidad: data.statistics.registros_viernes || 0 },
+                                    { nombre: 'Sábado', cantidad: data.statistics.registros_sabado || 0 },
+                                    { nombre: 'Domingo', cantidad: data.statistics.registros_domingo || 0 }
+                                ];
+
+                                diasSemana.forEach(dia => {
+                                    if (dia.cantidad > 0) {
+                                        distribucionHTML += `<span class="day-badge">${dia.nombre}: ${dia.cantidad}</span> `;
+                                    }
+                                });
+                                distribucionHTML += '</div>';
+                            }
+
                             distribucionDiv.innerHTML = distribucionHTML;
                         }
                     }
@@ -254,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         messageDiv.textContent = message;
         messageDiv.style.display = 'block';
-        messageDiv.style.opacity = '1';    
+        messageDiv.style.opacity = '1';
         setTimeout(() => {
             messageDiv.style.opacity = '0';
             setTimeout(() => {
@@ -266,4 +335,62 @@ document.addEventListener('DOMContentLoaded', function () {
     if (csvFileInput) {
         csvFileInput.accept = '.csv,.xlsx,.xls';
     }
+
+    // Agregar estilos CSS para las nuevas clases
+    const style = document.createElement('style');
+    style.textContent = `
+        .day-distribution {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f0f8ff;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .day-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        
+        .day-stat {
+            background: #2196F3;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        
+        .day-distribution-preview {
+            margin-top: 10px;
+        }
+        
+        .day-badge {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 3px 8px;
+            margin: 2px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .stat-item {
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 3px solid #4CAF50;
+        }
+    `;
+    document.head.appendChild(style);
 });

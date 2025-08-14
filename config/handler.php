@@ -145,6 +145,94 @@ function reiniciarContadorINUMSOP($nuevoValor = 1)
     }
 }
 
+/**
+ * Función para distribuir cantidades según el día de la semana de FSOPORT
+ * @param string $fecha Fecha en formato YYYY-MM-DD o DD/MM/YYYY
+ * @param float $cantidad Cantidad a distribuir
+ * @return array Array con cantidades distribuidas por día
+ */
+function distribuirCantidadPorDiaSemana($fecha, $cantidad)
+{
+    // Inicializar todas las cantidades en null
+    $distribucion = [
+        'QCANTLUN' => null,
+        'QCANTMAR' => null, 
+        'QCANTMIE' => null,
+        'QCANTJUE' => null,
+        'QCANTVIE' => null,
+        'QCANTSAB' => null,
+        'QCANTDOM' => null
+    ];
+    
+    // Si no hay fecha o cantidad, retornar distribución vacía
+    if (empty($fecha) || empty($cantidad) || $cantidad <= 0) {
+        return $distribucion;
+    }
+    
+    try {
+        // Convertir fecha a objeto DateTime
+        $fechaObj = null;
+        
+        // Intentar diferentes formatos de fecha
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha)) {
+            // Formato YYYY-MM-DD
+            $fechaObj = DateTime::createFromFormat('Y-m-d', $fecha);
+        } elseif (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $fecha)) {
+            // Formato DD/MM/YYYY
+            $fechaObj = DateTime::createFromFormat('d/m/Y', $fecha);
+        } elseif (preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', $fecha)) {
+            // Formato D/M/YYYY o DD/M/YYYY o D/MM/YYYY
+            $fechaObj = DateTime::createFromFormat('j/n/Y', $fecha);
+        }
+        
+        if (!$fechaObj) {
+            error_log("Formato de fecha no reconocido: $fecha");
+            // Por defecto, poner en lunes si no se puede procesar la fecha
+            $distribucion['QCANTLUN'] = floatval($cantidad);
+            return $distribucion;
+        }
+        
+        // Obtener el día de la semana (1=lunes, 7=domingo)
+        $diaSemana = $fechaObj->format('N');
+        
+        // Distribuir la cantidad según el día
+        switch ($diaSemana) {
+            case 1: // Lunes
+                $distribucion['QCANTLUN'] = floatval($cantidad);
+                break;
+            case 2: // Martes
+                $distribucion['QCANTMAR'] = floatval($cantidad);
+                break;
+            case 3: // Miércoles
+                $distribucion['QCANTMIE'] = floatval($cantidad);
+                break;
+            case 4: // Jueves
+                $distribucion['QCANTJUE'] = floatval($cantidad);
+                break;
+            case 5: // Viernes
+                $distribucion['QCANTVIE'] = floatval($cantidad);
+                break;
+            case 6: // Sábado
+                $distribucion['QCANTSAB'] = floatval($cantidad);
+                break;
+            case 7: // Domingo
+                $distribucion['QCANTDOM'] = floatval($cantidad);
+                break;
+            default:
+                // Por defecto en lunes si algo sale mal
+                $distribucion['QCANTLUN'] = floatval($cantidad);
+                break;
+        }
+        
+    } catch (Exception $e) {
+        error_log("Error procesando fecha $fecha: " . $e->getMessage());
+        // Por defecto en lunes si hay error
+        $distribucion['QCANTLUN'] = floatval($cantidad);
+    }
+    
+    return $distribucion;
+}
+
 function convertirExcelACSVNativo($archivoExcel)
 {
     $fileExtension = strtolower(pathinfo($archivoExcel, PATHINFO_EXTENSION));
@@ -661,22 +749,32 @@ function procesarInventarioIneditto($archivo_csv)
                 // Obtener siguiente número consecutivo ENTERO
                 $siguienteINUMSOP = obtenerSiguienteINUMSOP();
                 
+                // NUEVA FUNCIONALIDAD: Distribuir cantidad según día de semana de FSOPORT
+                $fechaMovimiento = $fila['FSOPORT'] ?? '';
+                $cantidadOriginal = !empty($fila['QCANTLUN']) ? floatval($fila['QCANTLUN']) : 0;
+                
+                // Obtener distribución por día de semana
+                $distribucionDias = distribuirCantidadPorDiaSemana($fechaMovimiento, $cantidadOriginal);
+                
+                error_log("Procesando registro - Fecha: $fechaMovimiento, Cantidad: $cantidadOriginal, Distribución: " . json_encode($distribucionDias));
+                
                 $stmt->execute([
                     ':iemp' => $fila['IEMP'] ?? '1',
-                    ':fsoport' => $fila['FSOPORT'] ?? '',
+                    ':fsoport' => $fechaMovimiento,
                     ':itdsop' => $fila['ITDSOP'] ?? '160',
                     ':inumsop' => $siguienteINUMSOP, // Número consecutivo entero
                     ':inventario' => $fila['INVENTARIO'] ?? '1',
                     ':irecurso' => $fila['IRECURSO'] ?? '',
                     ':iccsubcc' => $centro_costo,
                     ':ilabor' => $fila['ILABOR'] ?? '',
-                    ':qcantlun' => !empty($fila['QCANTLUN']) ? floatval($fila['QCANTLUN']) : 0,
-                    ':qcantmar' => !empty($fila['QCANTMAR']) ? floatval($fila['QCANTMAR']) : null,
-                    ':qcantmie' => !empty($fila['QCANTMIE']) ? floatval($fila['QCANTMIE']) : null,
-                    ':qcantjue' => !empty($fila['QCANTJUE']) ? floatval($fila['QCANTJUE']) : null,
-                    ':qcantvie' => !empty($fila['QCANTVIE']) ? floatval($fila['QCANTVIE']) : null,
-                    ':qcantsab' => !empty($fila['QCANTSAB']) ? floatval($fila['QCANTSAB']) : null,
-                    ':qcantdom' => !empty($fila['QCANTDOM']) ? floatval($fila['QCANTDOM']) : null,
+                    // Usar la distribución calculada en lugar de los valores originales
+                    ':qcantlun' => $distribucionDias['QCANTLUN'],
+                    ':qcantmar' => $distribucionDias['QCANTMAR'],
+                    ':qcantmie' => $distribucionDias['QCANTMIE'],
+                    ':qcantjue' => $distribucionDias['QCANTJUE'],
+                    ':qcantvie' => $distribucionDias['QCANTVIE'],
+                    ':qcantsab' => $distribucionDias['QCANTSAB'],
+                    ':qcantdom' => $distribucionDias['QCANTDOM'],
                     ':sobservac' => $fila['SOBSERVAC'] ?? '',
                     ':centro_costo' => $centro_costo
                 ]);
@@ -836,9 +934,18 @@ function obtenerEstadisticasTablaTemp()
                     COUNT(*) as total_registros,
                     COUNT(CASE WHEN ILABOR IS NULL OR ILABOR = '' THEN 1 END) as ilabor_vacios,
                     COUNT(DISTINCT centro_costo_asignado) as centros_costo_diferentes,
-                    COALESCE(SUM(QCANTLUN), 0) as suma_cantidades,
+                    COALESCE(SUM(QCANTLUN), 0) + COALESCE(SUM(QCANTMAR), 0) + COALESCE(SUM(QCANTMIE), 0) + 
+                    COALESCE(SUM(QCANTJUE), 0) + COALESCE(SUM(QCANTVIE), 0) + COALESCE(SUM(QCANTSAB), 0) + 
+                    COALESCE(SUM(QCANTDOM), 0) as suma_cantidades,
                     MIN(INUMSOP) as primer_inumsop,
-                    MAX(INUMSOP) as ultimo_inumsop
+                    MAX(INUMSOP) as ultimo_inumsop,
+                    COUNT(CASE WHEN QCANTLUN > 0 THEN 1 END) as registros_lunes,
+                    COUNT(CASE WHEN QCANTMAR > 0 THEN 1 END) as registros_martes,
+                    COUNT(CASE WHEN QCANTMIE > 0 THEN 1 END) as registros_miercoles,
+                    COUNT(CASE WHEN QCANTJUE > 0 THEN 1 END) as registros_jueves,
+                    COUNT(CASE WHEN QCANTVIE > 0 THEN 1 END) as registros_viernes,
+                    COUNT(CASE WHEN QCANTSAB > 0 THEN 1 END) as registros_sabado,
+                    COUNT(CASE WHEN QCANTDOM > 0 THEN 1 END) as registros_domingo
                   FROM inventarios_temp";
         $stmt = $conn->prepare($query);
         $stmt->execute();
@@ -858,8 +965,15 @@ function obtenerEstadisticasTablaTemp()
             'primer_inumsop' => 1,
             'ultimo_inumsop' => 1,
             'contador_actual' => 1,
-            'proximo_inumsop' => 2
+            'proximo_inumsop' => 2,
+            'registros_lunes' => 0,
+            'registros_martes' => 0,
+            'registros_miercoles' => 0,
+            'registros_jueves' => 0,
+            'registros_viernes' => 0,
+            'registros_sabado' => 0,
+            'registros_domingo' => 0
         ];
     }
 }
-?> 
+?>

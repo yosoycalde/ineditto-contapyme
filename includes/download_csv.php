@@ -16,12 +16,12 @@ try {
         throw new Exception("No hay datos procesados para descargar. Primero debe procesar un archivo de inventario.");
     }
     
-    // Obtener los datos procesados - AQUÍ ESTÁ LA CORRECCIÓN PRINCIPAL
+    // Obtener los datos procesados - ACTUALIZADO para incluir todos los campos de día
     $query = "SELECT IEMP, FSOPORT, ITDSOP, INUMSOP, INVENTARIO, IRECURSO, 
-                     centro_costo_asignado as ICCSUBCC, ILABOR, QCANTLUN, QCANTMAR, 
-                     QCANTMIE, QCANTJUE, QCANTVIE, QCANTSAB, QCANTDOM, SOBSERVAC 
+                     centro_costo_asignado as ICCSUBCC, ILABOR, 
+                     QCANTLUN, QCANTMAR, QCANTMIE, QCANTJUE, QCANTVIE, QCANTSAB, QCANTDOM, 
+                     SOBSERVAC 
               FROM inventarios_temp 
-              WHERE INVENTARIO != '6'
               ORDER BY INUMSOP ASC";
     $stmt = $conn->prepare($query);
     $stmt->execute();
@@ -68,14 +68,15 @@ try {
             $row['INVENTARIO'] ?? '',
             $row['IRECURSO'] ?? '',
             $row['ICCSUBCC'] ?? '',
-            '', 
+            '', // ILABOR vacío como en el original
+            // Ahora usamos las cantidades distribuidas por día de la semana
             $row['QCANTLUN'] ?? '',
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
+            $row['QCANTMAR'] ?? '',
+            $row['QCANTMIE'] ?? '',
+            $row['QCANTJUE'] ?? '',
+            $row['QCANTVIE'] ?? '',
+            $row['QCANTSAB'] ?? '',
+            $row['QCANTDOM'] ?? '',
             $row['SOBSERVAC'] ?? ''
         ];
         

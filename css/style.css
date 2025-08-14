@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #ddc1c1 0%, #764ba2 100%);
     padding: 20px;
     min-height: 100vh;
 }
@@ -29,7 +29,7 @@ body {
     left: 0;
     right: 0;
     height: 5px;
-    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #000000);
 }
 
 h1 {
@@ -134,7 +134,7 @@ button:hover {
 .format-info h3,
 .format-info h4 {
     margin-top: 0;
-    color: #5b0392; 
+    color: #5b0392;
     margin-bottom: 15px;
 }
 
@@ -357,4 +357,4 @@ tr:hover {
     100% {
         transform: rotate(360deg);
     }
-} 
+}
