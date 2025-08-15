@@ -1,250 +1,390 @@
-# Explicación Completa del Sistema PHP de Inventarios
+# Análisis Detallado del Sistema de Inventarios Ineditto → ContaPyme
 
-## 1. Estructura General del Sistema
+## Descripción General del Sistema
 
-Este es un sistema de gestión de inventarios llamado "ContaPyme" que procesa archivos Excel/CSV y los convierte para un sistema contable. La estructura está organizada en:
+Este sistema es una interfaz de procesamiento de archivos de inventario que convierte datos del formato Ineditto al formato ContaPyme. El sistema maneja archivos CSV, XLSX y XLS, asigna centros de costo automáticamente, distribuye cantidades por días de la semana y genera archivos CSV compatibles con ContaPyme.
 
-- **config/**: Configuración y manejadores principales
-- **includes/**: Funcionalidades específicas
-- **index.php**: Punto de entrada
+## Arquitectura del Sistema
 
-## 2. Configuración de la Base de Datos (`config/database.php`)
+### Estructura de Archivos
+
+```
+├── config/
+│   ├── database.php        # Configuración de base de datos
+│   ├── error.html          # Página de errores
+│   └── handler.php         # Funciones principales del sistema
+├── includes/
+│   ├── cleanup.php         # Limpieza de archivos y datos
+│   ├── cleanup_status.php  # Estado de limpieza
+│   ├── download_csv.php    # Descarga del archivo procesado
+│   ├── functions.php       # Funciones auxiliares
+│   ├── get_preview.php     # Vista previa de datos
+│   ├── manager-accountant.php # Gestión de contadores
+│   └── upload_handler.php  # Manejo de uploads
+├── required-files/
+│   ├── CENTRO DE COSTOS.csv
+│   └── ELEMENTOS DE INVENTARIO.csv
+├── css/
+│   ├── style.css
+│   └── error.css
+├── js/
+│   └── main.js
+└── index.html              # Interfaz de usuario
+```
+
+## Análisis Componente por Componente
+
+### 1. Database.php - Configuración de Base de Datos
 
 ```php
-class Database {
+class Database
+{
     private $host = 'localhost';
     private $db_name = 'ineditto_contapyme';
     private $username = 'root';
     private $password = '';
+    private $conn;
+}
+```
+
+**Funcionalidad:**
+- Clase singleton para manejo de conexiones PDO
+- Configuración centralizada de base de datos
+- Manejo de errores de conexión con excepciones PDO
+
+### 2. Handler.php - Núcleo del Sistema
+
+#### A) Gestión de Números Consecutivos (INUMSOP)
+
+```php
+function obtenerSiguienteINUMSOP()
+{
+    // Implementa un contador atómico usando transacciones
+    $conn->beginTransaction();
     
-    public function connect() {
-        // Conexión PDO con MySQL
-        $this->conn = new PDO("mysql:host=...", $this->username, $this->password);
-        return $this->conn;
+    // Verifica si existe el contador
+    $checkQuery = "SELECT valor_actual FROM contadores WHERE nombre = 'INUMSOP'";
+    
+    // Si no existe, lo crea con valor inicial 1
+    // Si existe, obtiene el valor actual e incrementa
+    
+    $conn->commit();
+    return $siguienteNumero;
+}
+```
+
+**Características:**
+- **Atomicidad:** Usa transacciones para evitar números duplicados
+- **Auto-inicialización:** Crea el contador si no existe
+- **Rollback:** Revierte cambios en caso de error
+
+#### B) Distribución por Días de Semana
+
+```php
+function distribuirCantidadPorDiaSemana($fecha, $cantidad)
+{
+    // Soporta múltiples formatos de fecha:
+    // - Y-m-d (2024-01-15)
+    // - d/m/Y (15/01/2024)
+    // - j/n/Y (15/1/2024)
+    
+    $diaSemana = $fechaObj->format('N'); // 1=Lunes, 7=Domingo
+    
+    switch ($diaSemana) {
+        case 1: $distribucion['QCANTLUN'] = floatval($cantidad); break;
+        case 2: $distribucion['QCANTMAR'] = floatval($cantidad); break;
+        // ... etc
     }
-} 
-```
-
-**Función**: Proporciona conexión a la base de datos MySQL usando PDO.
-
-## 3. Manejador Principal (`config/handler.php`)
-
-### 3.1 Sistema de Numeración Consecutiva (INUMSOP)
-
-```php
-function obtenerSiguienteINUMSOP() {
-    // 1. Inicia transacción
-    // 2. Busca el valor actual en tabla 'contadores'
-    // 3. Si no existe, crea contador inicial con valor 1
-    // 4. Incrementa el contador
-    // 5. Retorna el número consecutivo
 }
 ```
 
-**Propósito**: Generar números únicos consecutivos para cada registro de inventario.
+**Lógica de Negocio:**
+- Toma la fecha del movimiento (FSOPORT)
+- Determina el día de la semana
+- Asigna la cantidad completa al día correspondiente
+- Los demás días quedan en NULL
 
-### 3.2 Conversión de Archivos Excel
-
-```php
-function convertirXLSXACSVNativo($archivoXLSX) {
-    // 1. Abre archivo XLSX como ZIP
-    // 2. Lee shared strings (textos compartidos)
-    // 3. Procesa la hoja de trabajo principal
-    // 4. Convierte a formato CSV
-    // 5. Limpia archivos temporales
-}
-```
-
-**Características**:
-- Soporta XLSX (no XLS por limitaciones)
-- Maneja textos compartidos de Excel
-- Procesa celdas y referencias de columnas
-- Genera CSV compatible
-
-### 3.3 Asignación de Centros de Costo
+#### C) Asignación de Centros de Costo
 
 ```php
-function obtenerCentroCosto($ilabor, $codigo_elemento) {
-    // Mapeo directo por ILABOR
+function obtenerCentroCosto($ilabor, $codigo_elemento)
+{
+    // Prioridad 1: Mapeo directo por ILABOR
     $mapeoIlabor = [
-        'PERIODICOS' => '11212317002',
-        'PULICOMERCIALES' => '11212317003',
+        'PERIODICOS' => '11212117001',
+        'PULICOMERCIALES' => '11212417001',
         'REVISTAS' => '11212317001',
-        'PLEGADIZAS' => '11212317004'
-    ];
-    
-    // Mapeo por código de elemento
-    $mapeoElemento = [
-        '72312' => '11212317005',
-        '54003' => '11212317006',
         // ...
     ];
     
-    // Búsqueda en base de datos como fallback
-    // Retorna código por defecto si no encuentra
+    // Prioridad 2: Búsqueda en base de datos por ILABOR
+    
+    // Prioridad 3: Mapeo directo por código de elemento
+    $mapeoElemento = [
+        '76001' => '11212317001',
+        '76019' => '11212417001',
+        // ... (más de 200 mapeos)
+    ];
+    
+    // Prioridad 4: Búsqueda en base de datos por elemento
+    
+    // Default: '1121231700'
 }
 ```
 
-**Lógica**:
-1. Busca por ILABOR (tipo de trabajo)
-2. Si no encuentra, busca por código de elemento
-3. Como último recurso, busca en base de datos
-4. Retorna código por defecto: '1121231700'
+**Algoritmo de Asignación:**
+1. **ILABOR directo:** Busca en mapeo hardcodeado
+2. **ILABOR fuzzy:** Búsqueda LIKE en base de datos
+3. **Elemento directo:** Mapeo por código de elemento
+4. **Elemento BD:** Consulta tabla elementos
+5. **Default:** Centro de costo por defecto
 
-### 3.4 Procesamiento Principal de Inventario
-
-```php
-function procesarInventarioIneditto($archivo_csv) {
-    // 1. Limpia tabla temporal
-    // 2. Convierte Excel a CSV si es necesario
-    // 3. Lee headers del archivo
-    // 4. Procesa línea por línea
-    // 5. Para cada fila:
-    //    - Obtiene centro de costo
-    //    - Genera INUMSOP consecutivo
-    //    - Inserta en tabla temporal
-    // 6. Retorna cantidad procesada
-} 
-```
-
-## 4. Funciones de Importación
-
-### 4.1 Importar Centros de Costo
+#### D) Conversión de Archivos Excel
 
 ```php
-function importarCentrosCostos($archivo_csv) {
-    // Espera columnas: 'Codigo', 'Nombre'
-    // INSERT ... ON DUPLICATE KEY UPDATE
-    // Permite actualizar existentes
+function convertirXLSXACSVNativo($archivoXLSX)
+{
+    // Usa ZipArchive para leer archivos XLSX
+    $zip = new ZipArchive();
+    
+    // Lee shared strings (cadenas compartidas)
+    $sharedStrings = [];
+    if (($sharedStringsXML = $zip->getFromName('xl/sharedStrings.xml')) !== false) {
+        // Parsea XML de cadenas compartidas
+    }
+    
+    // Lee la primera hoja de trabajo
+    $worksheetXML = $zip->getFromName('xl/worksheets/sheet1.xml');
+    
+    // Convierte a CSV
+    foreach ($xml->sheetData->row as $row) {
+        // Procesa cada celda, maneja referencias de cadenas compartidas
+        fputcsv($csvFile, $rowData);
+    }
 }
 ```
 
-### 4.2 Importar Elementos
+**Características Técnicas:**
+- **Sin librerías externas:** Implementación nativa con ZipArchive
+- **Manejo de shared strings:** Soporte completo para cadenas compartidas de Excel
+- **Referencias de celda:** Convierte referencias como A1, B2 a índices numéricos
+- **Limpieza automática:** Elimina archivos temporales
+
+### 3. Upload Handler - Procesamiento de Archivos
 
 ```php
-function importarElementos($archivo_csv) {
-    // Espera: 'Cód. Artículo', 'Referencia', 'Descripción'
-    // Múltiples centros de costo por elemento
-    // 5 centros de costo posibles por elemento
+// Soporta tres tipos de operaciones:
+if ($_POST['action'] === 'import_centros') {
+    // Importa centros de costo desde CSV/Excel
+}
+if ($_POST['action'] === 'import_elementos') {
+    // Importa elementos de inventario desde CSV/Excel
+}
+if (isset($_FILES['csvFile'])) {
+    // Procesa archivo principal de inventario
 }
 ```
 
-## 5. Sistema de Limpieza (`includes/cleanup.php`)
+**Flujo de Procesamiento:**
+1. **Validación:** Verifica extensión de archivo
+2. **Upload:** Guarda archivo con timestamp único
+3. **Conversión:** Convierte Excel a CSV si es necesario
+4. **Procesamiento:** Ejecuta lógica específica según tipo
+5. **Limpieza:** Elimina archivos temporales
+6. **Respuesta JSON:** Retorna estadísticas y estado
 
+### 4. Sistema de Limpieza
+
+#### Cleanup.php - Limpieza Completa
 ```php
-function realizarLimpiezaCompleta() {
-    // 1. Limpia archivos temporales del directorio uploads/
-    // 2. Limpia tabla temporal inventarios_temp
-    // 3. Retorna estadísticas de limpieza
+function realizarLimpiezaCompleta()
+{
+    $archivosEliminados = limpiarArchivosTemporales();
+    $registrosEliminados = limpiarTablaTemporalInventarios();
+    
+    return [
+        'success' => true,
+        'archivos_eliminados' => $archivosEliminados,
+        'registros_eliminados' => $registrosEliminados
+    ];
 }
 ```
 
-**Archivos que limpia**: Archivos que empiecen con timestamp (patrón `/^\d+_/`)
-
-## 6. Descarga de CSV (`includes/download_csv.php`)
-
+#### Cleanup Status.php - Estado y Limpieza Forzada
 ```php
-// 1. Verifica que hay datos procesados
-// 2. Consulta datos de inventarios_temp
-// 3. Genera CSV con headers específicos
-// 4. Aplica formato UTF-8 con BOM
-// 5. Realiza limpieza automática después de descarga
+function verificarEstadoLimpieza()
+{
+    // Cuenta registros en inventarios_temp
+    // Cuenta archivos temporales en uploads/
+    // Determina si el sistema está "limpio"
+}
 ```
 
-**Headers del CSV generado**:
-- IEMP, FSOPORT, ITDSOP, INUMSOP, INVENTARIO
-- IRECURSO, ICCSUBCC, ILABOR
-- QCANTLUN, QCANTMAR, QCANTMIE, QCANTJUE, QCANTVIE, QCANTSAB, QCANTDOM
-- SOBSERVAC
+### 5. Preview System - Vista Previa de Datos
 
-## 7. Vista Previa (`includes/get_preview.php`)
-
-Proporciona información estadística:
-- Últimos 15 registros procesados
-- Estadísticas generales (total, registros sin labor, etc.)
-- Distribución de centros de costo
-- Estado del contador INUMSOP
-- Verificación de integridad
-
-## 8. Gestión del Contador (`includes/manager-accountant.php`)
-
-API REST para gestionar el contador INUMSOP:
-
-### Endpoints GET:
-- `?action=estado`: Estado completo del sistema
-- `?action=proximo`: Próximo número disponible
-- `?action=validar&numero=X`: Validar si número existe
-
-### Endpoints POST:
-- `{"action":"reiniciar","valor":X}`: Reiniciar contador
-- `{"action":"incrementar"}`: Incrementar manualmente
-- `{"action":"establecer","valor":X}`: Establecer valor específico
-
-## 9. Subida de Archivos (`includes/upload_handler.php`)
-
-Maneja tres tipos de operaciones:
-
-### 9.1 Importar Centros de Costo
 ```php
-// POST con action=import_centros
-// Archivo en $_FILES['configFile']
+// Obtiene últimos 15 registros procesados
+$query = "SELECT IRECURSO, ICCSUBCC, QCANTLUN, FSOPORT, 
+                 centro_costo_asignado, ILABOR, SOBSERVAC, INUMSOP 
+          FROM inventarios_temp 
+          ORDER BY INUMSOP DESC 
+          LIMIT 15";
+
+// Estadísticas generales
+$statsQuery = "SELECT COUNT(*) as total_registros,
+                      COUNT(CASE WHEN ILABOR IS NULL OR ILABOR = '' THEN 1 END) as registros_sin_labor,
+                      SUM(QCANTLUN) as suma_total_cantidades,
+                      MIN(INUMSOP) as primer_inumsop,
+                      MAX(INUMSOP) as ultimo_inumsop";
+
+// Distribución por centros de costo
+$distQuery = "SELECT centro_costo_asignado, COUNT(*) as cantidad_registros 
+              FROM inventarios_temp 
+              GROUP BY centro_costo_asignado 
+              ORDER BY cantidad_registros DESC";
 ```
 
-### 9.2 Importar Elementos
+### 6. Download CSV - Generación de Archivo Final
+
 ```php
-// POST con action=import_elementos  
-// Archivo en $_FILES['configFile']
+// Headers para descarga CSV
+header('Content-Type: text/csv; charset=utf-8');
+header('Content-Disposition: attachment; filename="contapyme_' . date('Y-m-d_H-i-s') . '.csv"');
+
+// BOM para UTF-8
+fprintf($csvOutput, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+// Headers específicos de ContaPyme
+$headers = ['IEMP', 'FSOPORT', 'ITDSOP', 'INUMSOP', 'INVENTARIO', 
+           'IRECURSO', 'ICCSUBCC', 'ILABOR', 'QCANTLUN', 'QCANTMAR', 
+           'QCANTMIE', 'QCANTJUE', 'QCANTVIE', 'QCANTSAB', 'QCANTDOM', 'SOBSERVAC'];
+
+// ILABOR siempre se envía vacío (requisito de ContaPyme)
+$csvRow[7] = ''; // ILABOR vacío
+
+// Limpieza automática después de descarga
+realizarLimpiezaCompleta($conn);
 ```
 
-### 9.3 Procesar Inventario
-```php
-// POST con archivo en $_FILES['csvFile']
-// Procesamiento principal del inventario
+## Estructura de Base de Datos
+
+### Tablas Principales
+
+#### inventarios_temp
+```sql
+CREATE TABLE inventarios_temp (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    IEMP VARCHAR(10),
+    FSOPORT DATE,
+    ITDSOP VARCHAR(10),
+    INUMSOP INT,
+    INVENTARIO VARCHAR(10),
+    IRECURSO VARCHAR(50),
+    ICCSUBCC VARCHAR(20),
+    ILABOR VARCHAR(100),
+    QCANTLUN DECIMAL(10,2),
+    QCANTMAR DECIMAL(10,2),
+    QCANTMIE DECIMAL(10,2),
+    QCANTJUE DECIMAL(10,2),
+    QCANTVIE DECIMAL(10,2),
+    QCANTSAB DECIMAL(10,2),
+    QCANTDOM DECIMAL(10,2),
+    SOBSERVAC TEXT,
+    centro_costo_asignado VARCHAR(20),
+    fecha_procesamiento TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 ```
 
-## 10. Estructura de Base de Datos
+#### contadores
+```sql
+CREATE TABLE contadores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) UNIQUE,
+    valor_actual INT NOT NULL DEFAULT 0,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
 
-### Tablas Principales:
+#### centros_costos
+```sql
+CREATE TABLE centros_costos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    codigo VARCHAR(20) UNIQUE,
+    nombre VARCHAR(100)
+);
+```
 
-**contadores**:
-- id (PK)
-- nombre (UNIQUE)
-- valor_actual
-- fecha_actualizacion
+#### elementos
+```sql
+CREATE TABLE elementos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    codigo VARCHAR(20) UNIQUE,
+    referencia VARCHAR(100),
+    descripcion VARCHAR(200),
+    centro_costo_1 VARCHAR(20),
+    centro_costo_2 VARCHAR(20),
+    centro_costo_3 VARCHAR(20),
+    centro_costo_4 VARCHAR(20),
+    centro_costo_5 VARCHAR(20)
+);
+```
 
-**inventarios_temp**:
-- Todos los campos del inventario
-- centro_costo_asignado
-- fecha_procesamiento
+## Flujo de Datos Completo
 
-**centros_costos**:
-- codigo (PK)
-- nombre
+### 1. Carga de Archivo
+1. Usuario selecciona archivo (CSV/XLSX/XLS)
+2. Sistema valida formato
+3. Si es Excel, convierte a CSV usando ZipArchive
+4. Guarda archivo temporal con timestamp
 
-**elementos**:
-- codigo (PK)
-- referencia, descripcion
-- centro_costo_1 hasta centro_costo_5
+### 2. Procesamiento de Inventario
+1. Lee headers y limpia BOM UTF-8
+2. Procesa fila por fila:
+   - Obtiene siguiente INUMSOP (atómico)
+   - Determina centro de costo (4 niveles de prioridad)
+   - Distribuye cantidad según día de semana de FSOPORT
+   - Inserta en inventarios_temp
 
-## 11. Flujo de Trabajo Típico
+### 3. Vista Previa
+1. Consulta últimos registros procesados
+2. Genera estadísticas (totales, distribución, integridad)
+3. Muestra información del contador INUMSOP
 
-1. **Configuración inicial**: Importar centros de costo y elementos
-2. **Procesamiento**: Subir archivo de inventario (Excel/CSV)
-3. **Conversión**: Sistema convierte Excel a CSV automáticamente
-4. **Asignación**: Asigna centros de costo según reglas de negocio
-5. **Numeración**: Genera números INUMSOP consecutivos únicos
-6. **Vista previa**: Revisar datos procesados
-7. **Descarga**: Generar CSV final para sistema contable
-8. **Limpieza**: Limpieza automática post-descarga
+### 4. Descarga
+1. Consulta todos los registros de inventarios_temp
+2. Genera CSV con formato específico ContaPyme
+3. Limpia automáticamente archivos y datos temporales
 
-## 12. Características Técnicas
+## Características Técnicas Destacadas
 
-- **Transacciones**: Uso de transacciones para integridad de datos
-- **Manejo de errores**: Try-catch extensivo con logging
-- **Limpieza automática**: Previene acumulación de archivos temporales
-- **API REST**: Endpoints JSON para gestión del contador
-- **Soporte multi-formato**: CSV, XLSX (XLS limitado)
-- **Validación**: Verificación de integridad de datos
-- **UTF-8 BOM**: Compatibilidad con Excel en descarga
+### Robustez
+- **Transacciones atómicas** para números consecutivos
+- **Manejo de excepciones** en todas las operaciones
+- **Rollback automático** en caso de errores
+- **Validación de integridad** de datos
 
-Este sistema está diseñado para ser robusto, manejar grandes volúmenes de datos y mantener la integridad de la numeración consecutiva crítica para sistemas contables.
+### Flexibilidad
+- **Múltiples formatos** de archivo (CSV, XLSX, XLS)
+- **Múltiples formatos** de fecha
+- **Mapeo configurable** de centros de costo
+- **Sistema de limpieza** manual y automático
+
+### Rendimiento
+- **Procesamiento por lotes** para archivos grandes
+- **Consultas optimizadas** con LIMIT y ORDER BY
+- **Limpieza automática** de recursos temporales
+- **Indices en campos clave** (INUMSOP, códigos)
+
+### Seguridad
+- **Validación de tipos** de archivo
+- **Sanitización de nombres** de archivo
+- **Prepared statements** para evitar SQL injection
+- **Logging de errores** para auditoría
+
+## Casos de Uso del Sistema
+
+1. **Procesamiento diario:** Archivos de inventario regulares
+2. **Configuración inicial:** Carga de centros de costo y elementos
+3. **Corrección de datos:** Limpieza y reprocesamiento
+4. **Auditoría:** Vista previa y verificación antes de descarga
+5. **Integración:** Exportación compatible con ContaPyme
