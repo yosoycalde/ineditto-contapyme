@@ -789,7 +789,6 @@ function obtenerEstadisticasTablaTemp()
 }
 
 /**
- * 
  * @return int 
  */
 function obtenerSiguienteINUMSOP()
@@ -824,7 +823,6 @@ function obtenerSiguienteINUMSOP()
 }
 
 /**
- * 
  * @return array 
  */
 function obtenerEstadoContador()
@@ -841,7 +839,6 @@ function obtenerEstadoContador()
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$result) {
-            // Crear contador inicial
             $insertQuery = "INSERT INTO contadores (nombre, valor_actual) VALUES ('INUMSOP', 1)";
             $insertStmt = $conn->prepare($insertQuery);
             $insertStmt->execute();
@@ -867,7 +864,6 @@ function obtenerEstadoContador()
 }
 
 /**
- *
  * @param string|int 
  * @return bool 
  */
@@ -889,7 +885,6 @@ function existeINUMSOP($inumsop)
 }
 
 /**
- * 
  * @param int 
  * @return bool 
  */
