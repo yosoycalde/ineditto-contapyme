@@ -6,7 +6,6 @@ try {
     $database = new Database();
     $conn = $database->connect();
     
-    // Verificar que hay datos para descargar
     $checkQuery = "SELECT COUNT(*) as total FROM inventarios_temp";
     $checkStmt = $conn->prepare($checkQuery);
     $checkStmt->execute();
@@ -16,7 +15,6 @@ try {
         throw new Exception("No hay datos procesados para descargar. Primero debe procesar un archivo de inventario.");
     }
     
-    // Obtener los datos procesados - ACTUALIZADO para incluir todos los campos de día
     $query = "SELECT IEMP, FSOPORT, ITDSOP, INUMSOP, INVENTARIO, IRECURSO, 
                      centro_costo_asignado as ICCSUBCC, ILABOR, 
                      QCANTLUN, QCANTMAR, QCANTMIE, QCANTJUE, QCANTVIE, QCANTSAB, QCANTDOM, 
@@ -68,8 +66,7 @@ try {
             $row['INVENTARIO'] ?? '',
             $row['IRECURSO'] ?? '',
             $row['ICCSUBCC'] ?? '',
-            '', // ILABOR vacío como en el original
-            // Ahora usamos las cantidades distribuidas por día de la semana
+            '',
             $row['QCANTLUN'] ?? '',
             $row['QCANTMAR'] ?? '',
             $row['QCANTMIE'] ?? '',

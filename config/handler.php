@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../config/database.php';
 
 /**
- * Entrega el ultimo numero consecutivo en INUMSOP
+ * 
  * @return int 
  */
 function obtenerSiguienteINUMSOP()
@@ -19,7 +19,6 @@ function obtenerSiguienteINUMSOP()
         $result = $checkStmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$result) {
-            // Insertar contador inicial con valor 1 (no 0)
             $insertQuery = "INSERT INTO contadores (nombre, valor_actual) VALUES ('INUMSOP', 1)";
             $insertStmt = $conn->prepare($insertQuery);
             $insertStmt->execute();
@@ -28,12 +27,10 @@ function obtenerSiguienteINUMSOP()
             $valorActual = (int)$result['valor_actual'];
         }
         
-        // Incrementar el contador
         $updateQuery = "UPDATE contadores SET valor_actual = valor_actual + 1 WHERE nombre = 'INUMSOP'";
         $updateStmt = $conn->prepare($updateQuery);
         $updateStmt->execute();
         
-        // El siguiente número es el valor actual (antes del incremento)
         $siguienteNumero = $valorActual;
         
         $conn->commit();
@@ -48,9 +45,9 @@ function obtenerSiguienteINUMSOP()
 }
 
 /**
- * Nos ayuda a verificar si INUMSOP si esta en la tabla 
- * @param string|int $inumsop
- * @return bool True si existe, False si no existe
+ * 
+ * @param string|int
+ * @return bool 
  */
 function existeINUMSOP($inumsop)
 {
@@ -73,8 +70,8 @@ function existeINUMSOP($inumsop)
 }
 
 /**
- * Obtiene el estado actual del contador
- * @return array Estado del contador con valor actual y próximo valor
+ * 
+ * @return array 
  */
 function obtenerEstadoContador()
 {
@@ -93,7 +90,6 @@ function obtenerEstadoContador()
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$result) {
-            // Crear contador inicial
             $insertQuery = "INSERT INTO contadores (nombre, valor_actual) VALUES ('INUMSOP', 1)";
             $insertStmt = $conn->prepare($insertQuery);
             $insertStmt->execute();
@@ -122,9 +118,9 @@ function obtenerEstadoContador()
 }
 
 /**
- * Reinicia el contador a un valor específico (usar con precaución)
- * @param int $nuevoValor Nuevo valor para el contador
- * @return bool True si se reinició correctamente
+ *
+ * @param int
+ * @return bool
  */
 function reiniciarContadorINUMSOP($nuevoValor = 1)
 {
@@ -146,14 +142,13 @@ function reiniciarContadorINUMSOP($nuevoValor = 1)
 }
 
 /**
- * Función para distribuir cantidades según el día de la semana de FSOPORT
- * @param string $fecha Fecha en formato YYYY-MM-DD o DD/MM/YYYY
- * @param float $cantidad Cantidad a distribuir
- * @return array Array con cantidades distribuidas por día
+ *
+ * @param string 
+ * @param float 
+ * @return array 
  */
 function distribuirCantidadPorDiaSemana($fecha, $cantidad)
 {
-    // Inicializar todas las cantidades en null
     $distribucion = [
         'QCANTLUN' => null,
         'QCANTMAR' => null, 
@@ -164,69 +159,58 @@ function distribuirCantidadPorDiaSemana($fecha, $cantidad)
         'QCANTDOM' => null
     ];
     
-    // Si no hay fecha o cantidad, retornar distribución vacía
     if (empty($fecha) || empty($cantidad) || $cantidad <= 0) {
         return $distribucion;
     }
     
     try {
-        // Convertir fecha a objeto DateTime
         $fechaObj = null;
         
-        // Intentar diferentes formatos de fecha
         if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha)) {
-            // Formato YYYY-MM-DD
             $fechaObj = DateTime::createFromFormat('Y-m-d', $fecha);
         } elseif (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $fecha)) {
-            // Formato DD/MM/YYYY
             $fechaObj = DateTime::createFromFormat('d/m/Y', $fecha);
         } elseif (preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', $fecha)) {
-            // Formato D/M/YYYY o DD/M/YYYY o D/MM/YYYY
             $fechaObj = DateTime::createFromFormat('j/n/Y', $fecha);
         }
         
         if (!$fechaObj) {
             error_log("Formato de fecha no reconocido: $fecha");
-            // Por defecto, poner en lunes si no se puede procesar la fecha
             $distribucion['QCANTLUN'] = floatval($cantidad);
             return $distribucion;
         }
         
-        // Obtener el día de la semana (1=lunes, 7=domingo)
         $diaSemana = $fechaObj->format('N');
         
-        // Distribuir la cantidad según el día
         switch ($diaSemana) {
-            case 1: // Lunes
+            case 1: 
                 $distribucion['QCANTLUN'] = floatval($cantidad);
                 break;
-            case 2: // Martes
+            case 2: 
                 $distribucion['QCANTMAR'] = floatval($cantidad);
                 break;
-            case 3: // Miércoles
+            case 3: 
                 $distribucion['QCANTMIE'] = floatval($cantidad);
                 break;
-            case 4: // Jueves
+            case 4: 
                 $distribucion['QCANTJUE'] = floatval($cantidad);
                 break;
-            case 5: // Viernes
+            case 5: 
                 $distribucion['QCANTVIE'] = floatval($cantidad);
                 break;
-            case 6: // Sábado
+            case 6: 
                 $distribucion['QCANTSAB'] = floatval($cantidad);
                 break;
-            case 7: // Domingo
+            case 7: 
                 $distribucion['QCANTDOM'] = floatval($cantidad);
                 break;
             default:
-                // Por defecto en lunes si algo sale mal
                 $distribucion['QCANTLUN'] = floatval($cantidad);
                 break;
         }
         
     } catch (Exception $e) {
         error_log("Error procesando fecha $fecha: " . $e->getMessage());
-        // Por defecto en lunes si hay error
         $distribucion['QCANTLUN'] = floatval($cantidad);
     }
     
@@ -746,14 +730,11 @@ function procesarInventarioIneditto($archivo_csv)
                     $fila['IRECURSO'] ?? ''
                 );
                 
-                // Obtener siguiente número consecutivo ENTERO
                 $siguienteINUMSOP = obtenerSiguienteINUMSOP();
                 
-                // NUEVA FUNCIONALIDAD: Distribuir cantidad según día de semana de FSOPORT
                 $fechaMovimiento = $fila['FSOPORT'] ?? '';
                 $cantidadOriginal = !empty($fila['QCANTLUN']) ? floatval($fila['QCANTLUN']) : 0;
                 
-                // Obtener distribución por día de semana
                 $distribucionDias = distribuirCantidadPorDiaSemana($fechaMovimiento, $cantidadOriginal);
                 
                 error_log("Procesando registro - Fecha: $fechaMovimiento, Cantidad: $cantidadOriginal, Distribución: " . json_encode($distribucionDias));
@@ -762,12 +743,11 @@ function procesarInventarioIneditto($archivo_csv)
                     ':iemp' => $fila['IEMP'] ?? '1',
                     ':fsoport' => $fechaMovimiento,
                     ':itdsop' => $fila['ITDSOP'] ?? '160',
-                    ':inumsop' => $siguienteINUMSOP, // Número consecutivo entero
+                    ':inumsop' => $siguienteINUMSOP,
                     ':inventario' => $fila['INVENTARIO'] ?? '1',
                     ':irecurso' => $fila['IRECURSO'] ?? '',
                     ':iccsubcc' => $centro_costo,
                     ':ilabor' => $fila['ILABOR'] ?? '',
-                    // Usar la distribución calculada en lugar de los valores originales
                     ':qcantlun' => $distribucionDias['QCANTLUN'],
                     ':qcantmar' => $distribucionDias['QCANTMAR'],
                     ':qcantmie' => $distribucionDias['QCANTMIE'],

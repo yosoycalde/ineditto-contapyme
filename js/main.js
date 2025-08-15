@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         stats.registros_domingo > 0) {
                         distribucionDias = `
                             <div class="day-distribution">
-                                <h4>📅 Distribución por día de semana:</h4>
+                                <h4> Distribución por día de semana:</h4>
                                 <div class="day-stats">
                                     <span class="day-stat">Lunes: ${stats.registros_lunes || 0}</span>
                                     <span class="day-stat">Martes: ${stats.registros_martes || 0}</span>
@@ -217,10 +217,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     data.data.forEach(row => {
                         const tr = document.createElement('tr');
 
-                        // Calcular qué día de la semana corresponde basado en las cantidades
                         let diaSemana = '';
                         if (parseFloat(row.cantidad) > 0) {
-                            // Intentar determinar el día basado en la fecha
                             if (row.fecha_movimiento) {
                                 try {
                                     const fecha = new Date(row.fecha_movimiento);
@@ -239,7 +237,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             tr.appendChild(td);
                         });
 
-                        // Agregar celda de día de semana
                         const tdDia = document.createElement('td');
                         tdDia.textContent = diaSemana;
                         tdDia.style.fontWeight = 'bold';
@@ -336,7 +333,6 @@ document.addEventListener('DOMContentLoaded', function () {
         csvFileInput.accept = '.csv,.xlsx,.xls';
     }
 
-    // Agregar estilos CSS para las nuevas clases
     const style = document.createElement('style');
     style.textContent = `
         .day-distribution {
