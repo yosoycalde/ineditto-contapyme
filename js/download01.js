@@ -8,4 +8,4 @@ setTimeout(function () {
         }).catch(error => {
             console.log(' Error en limpieza automática:', error);
         });
-}, 3000);
+}, 3000);  
