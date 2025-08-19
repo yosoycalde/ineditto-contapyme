@@ -862,7 +862,6 @@ function obtenerEstadoContador()
         ];
     }
 }
-
 /**
  * @param string|int 
  * @return bool 
@@ -883,7 +882,6 @@ function existeINUMSOP($inumsop)
         return false;
     }
 }
-
 /**
  * @param int 
  * @return bool 
