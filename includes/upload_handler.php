@@ -182,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'statistics' => $stats,
                     'message' => "Archivo de inventario {$fileExtension} procesado correctamente"
                 ]);
-                exit;
+                exit;    
             } catch (Exception $e) {
                 if (file_exists($uploadPath)) {
                     unlink($uploadPath);
