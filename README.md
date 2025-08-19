@@ -146,7 +146,7 @@ function realizarLimpiezaCompleta() {
 ```php
 // 1. Verifica que hay datos procesados
 // 2. Consulta datos de inventarios_temp
-// 3. Genera CSV con headers específicos
+// 3. Genera CSV con headers específicos            
 // 4. Aplica formato UTF-8 con BOM
 // 5. Realiza limpieza automática después de descarga
 ```
