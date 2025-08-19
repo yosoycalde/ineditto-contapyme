@@ -277,7 +277,6 @@ function convertirXLSXACSVNativo($archivoXLSX)
         }
 
         $zip->close();
-
         $xml = simplexml_load_string($worksheetXML);
         if ($xml === false) {
             throw new Exception("No se pudo parsear el contenido XML de la hoja de trabajo");
