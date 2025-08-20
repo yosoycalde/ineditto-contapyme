@@ -5,12 +5,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const downloadBtn = document.getElementById('downloadBtn');
     const actionButtons = document.querySelector('.action-buttons');
 
-    // Inicializar sistema de animaciones
     let animationsReady = false;
     setTimeout(() => {
         if (window.inventoryAnimations) {
             animationsReady = true;
-            // Animar elementos iniciales
             inventoryAnimations.addHoverEffects('.upload-container, .info-section');
         }
     }, 100);
@@ -22,8 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
         cleanupBtn.style.display = 'none';
         cleanupBtn.style.marginLeft = '15px';
         actionButtons.appendChild(cleanupBtn);
-        
-        // Agregar efecto hover al botón
+
         if (animationsReady) {
             cleanupBtn.classList.add('animated-button');
         }
@@ -40,10 +37,8 @@ document.addEventListener('DOMContentLoaded', function () {
         formData.append('action', action);
         const fileExt = file.name.split('.').pop().toUpperCase();
         
-        // Mostrar mensaje animado
         showMessage(`Procesando archivo ${fileExt} - Importando ${tipo}...`, 'info');
         
-        // Mostrar spinner si está disponible
         if (animationsReady) {
             inventoryAnimations.showSpinner(`Importando ${tipo}...`);
         }
@@ -53,18 +48,6 @@ document.addEventListener('DOMContentLoaded', function () {
             body: formData
         })
             .then(response => response.json())
-            .then(data => {
-                // Ocultar spinner
-                if (animationsReady) {
-                    inventoryAnimations.hideSpinner();
-                }
-                
-                if (data.success) {
-                    showMessage(` ${data.message} (${data.records} registros)`, 'success');
-                } else {
-                    showMessage(` Error al importar ${tipo}: ${data.message}`, 'error');
-                }
-            })
             .catch(error => {
                 console.error('Error:', error);
                 if (animationsReady) {
@@ -107,22 +90,15 @@ document.addEventListener('DOMContentLoaded', function () {
         formData.append('csvFile', file);
         const processInfo = document.getElementById('processInfo');
         
-        // Mostrar animaciones de carga
-        if (animationsReady) {
-            inventoryAnimations.showSpinner(`Procesando archivo ${fileExt.toUpperCase()}`);
-            inventoryAnimations.showProgressBar();
-        }
         
         processInfo.innerHTML = `<p class="info"> Procesando archivo ${fileExt.toUpperCase()} de inventario y distribuyendo cantidades por día de semana...</p>`;
         
-        // Animar aparición de la sección de resultados
         if (animationsReady) {
             inventoryAnimations.animateSection('results', 'slide-down');
         } else {
             resultsSection.style.display = 'block';
         }
 
-        // Simular progreso durante la carga
         if (animationsReady) {
             let progress = 0;
             const progressInterval = setInterval(() => {
@@ -143,7 +119,6 @@ document.addEventListener('DOMContentLoaded', function () {
         })
             .then(response => response.json())
             .then(data => {
-                // Completar progreso
                 if (animationsReady) {
                     inventoryAnimations.updateProgress(100);
                     setTimeout(() => {
@@ -154,7 +129,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.success) {
                     const stats = data.statistics;
 
-                    // Crear estadísticas de distribución por día de semana
                     let distribucionDias = '';
                     if (stats.registros_lunes > 0 || stats.registros_martes > 0 || stats.registros_miercoles > 0 ||
                         stats.registros_jueves > 0 || stats.registros_viernes > 0 || stats.registros_sabado > 0 ||
@@ -200,7 +174,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                     </div>`;
 
-                    // Animar estadísticas si las animaciones están disponibles
                     if (animationsReady) {
                         setTimeout(() => {
                             const statsGrid = processInfo.querySelector('.stats-grid');
@@ -208,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 inventoryAnimations.animateStats(statsGrid);
                             }
                             
-                            // Animar distribución de días
+
                             const dayDistribution = processInfo.querySelector('.day-distribution');
                             if (dayDistribution) {
                                 dayDistribution.classList.add('scale-in');
@@ -216,7 +189,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         }, 500);
                     }
 
-                    // Mostrar botones con animación
                     downloadBtn.style.display = 'inline-block';
                     if (animationsReady) {
                         downloadBtn.classList.add('bounce-in');
@@ -237,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     mostrarVistPrevia();
                 } else {
-                    processInfo.innerHTML = `<p class="error">❌ Error: ${data.message}</p>`;
+                    processInfo.innerHTML = `<p class="error">Error: ${data.message}</p>`;
                     if (animationsReady) {
                         inventoryAnimations.shakeElement(processInfo);
                     }
@@ -248,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (animationsReady) {
                     inventoryAnimations.completeLoading(false);
                 }
-                processInfo.innerHTML = '<p class="error">❌ Error al procesar el archivo</p>';
+                processInfo.innerHTML = '<p class="error">Error al procesar el archivo</p>';
                 if (animationsReady) {
                     inventoryAnimations.shakeElement(processInfo);
                 }
@@ -258,7 +230,6 @@ document.addEventListener('DOMContentLoaded', function () {
     downloadBtn.addEventListener('click', function () {
         showMessage(' Iniciando descarga y limpieza automática...', 'info');
         
-        // Agregar efecto de pulso al botón
         if (animationsReady) {
             inventoryAnimations.pulseElement(downloadBtn, 1000);
         }
@@ -295,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     showMessage(' Descarga y limpieza completadas exitosamente', 'success');
                     resetearInterfaz();
                 } else if (data.success && data.statistics.total_registros > 0) {
-                    showMessage('🔄 Completando limpieza...', 'info');
+                    showMessage('Completando limpieza...', 'info');
                     setTimeout(() => {
                         realizarLimpiezaManual();
                     }, 1000);
@@ -341,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function realizarLimpiezaManual() {
-        showMessage('🧹 Realizando limpieza manual...', 'info');
+        showMessage(' Realizando limpieza manual...', 'info');
         
         if (animationsReady) {
             inventoryAnimations.showSpinner('Limpiando archivos y datos...');
@@ -368,7 +339,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (animationsReady) {
                     inventoryAnimations.hideSpinner();
                 }
-                showMessage('❌ Error de conexión durante la limpieza', 'error');
+                showMessage('Error de conexión durante la limpieza', 'error');
             });
     }
 
@@ -453,7 +424,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             });
                             distribucionHTML += '</ul>';
 
-                            // Agregar información sobre distribución por días
                             if (data.statistics) {
                                 distribucionHTML += '<h4> Distribución por Día de Semana:</h4><div class="day-distribution-preview">';
                                 const diasSemana = [
