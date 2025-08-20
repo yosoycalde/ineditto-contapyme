@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (animationsReady) {
                     inventoryAnimations.hideSpinner();
                 }
-                showMessage(` Error de conexión al importar ${tipo}`, 'error');
+                showMessage(`❌ Error de conexión al importar ${tipo}`, 'error');
             });
     }
 
@@ -90,8 +90,15 @@ document.addEventListener('DOMContentLoaded', function () {
         formData.append('csvFile', file);
         const processInfo = document.getElementById('processInfo');
         
+        // ANIMACIÓN DE CARGA - Iniciar spinner
+        if (animationsReady) {
+            inventoryAnimations.showSpinner(
+                `Procesando archivo ${fileExt.toUpperCase()}...`,
+                'Distribuyendo cantidades por día de semana'
+            );
+        }
         
-        processInfo.innerHTML = `<p class="info"> Procesando archivo ${fileExt.toUpperCase()} de inventario y distribuyendo cantidades por día de semana...</p>`;
+        processInfo.innerHTML = `<p class="info">🔄 Procesando archivo ${fileExt.toUpperCase()} de inventario y distribuyendo cantidades por día de semana...</p>`;
         
         if (animationsReady) {
             inventoryAnimations.animateSection('results', 'slide-down');
@@ -99,18 +106,10 @@ document.addEventListener('DOMContentLoaded', function () {
             resultsSection.style.display = 'block';
         }
 
+        // Simular progreso de procesamiento
+        let progressInterval;
         if (animationsReady) {
-            let progress = 0;
-            const progressInterval = setInterval(() => {
-                progress += Math.random() * 10;
-                if (progress > 85) {
-                    progress = 85;
-                    clearInterval(progressInterval);
-                }
-                inventoryAnimations.updateProgress(progress);
-            }, 300);
-
-            setTimeout(() => clearInterval(progressInterval), 10000);
+            progressInterval = inventoryAnimations.simulateFileProcessing(100);
         }
 
         fetch('includes/upload_handler.php', {
@@ -119,11 +118,14 @@ document.addEventListener('DOMContentLoaded', function () {
         })
             .then(response => response.json())
             .then(data => {
+                // Detener simulación de progreso
+                if (progressInterval) {
+                    clearInterval(progressInterval);
+                }
+
+                // ANIMACIÓN DE CARGA - Completar según resultado
                 if (animationsReady) {
-                    inventoryAnimations.updateProgress(100);
-                    setTimeout(() => {
-                        inventoryAnimations.completeLoading(data.success);
-                    }, 500);
+                    inventoryAnimations.completeLoading(data.success, data.message);
                 }
 
                 if (data.success) {
@@ -135,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         stats.registros_domingo > 0) {
                         distribucionDias = `
                             <div class="day-distribution">
-                                <h4> Distribución por día de semana:</h4>
+                                <h4>📅 Distribución por día de semana:</h4>
                                 <div class="day-stats">
                                     <span class="day-stat">Lunes: ${stats.registros_lunes || 0}</span>
                                     <span class="day-stat">Martes: ${stats.registros_martes || 0}</span>
@@ -150,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     processInfo.innerHTML = `
                     <div class="success">
-                        <h3> ${data.message}</h3>
+                        <h3>✅ ${data.message}</h3>
                         <div class="stats-grid">
                             <div class="stat-item">
                                 <strong>Registros procesados:</strong> <span class="counter">${data.records}</span>
@@ -170,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                         ${distribucionDias}
                         <div class="info" style="margin-top: 15px;">
-                            <p> <strong>Importante:</strong> Las cantidades se han distribuido automáticamente según el día de la semana correspondiente a la fecha FSOPORT. Después de descargar el archivo CSV, todos los archivos temporales y datos procesados se eliminarán automáticamente del servidor.</p>
+                            <p>📊 <strong>Importante:</strong> Las cantidades se han distribuido automáticamente según el día de la semana correspondiente a la fecha FSOPORT. Después de descargar el archivo CSV, todos los archivos temporales y datos procesados se eliminarán automáticamente del servidor.</p>
                         </div>
                     </div>`;
 
@@ -181,7 +183,6 @@ document.addEventListener('DOMContentLoaded', function () {
                                 inventoryAnimations.animateStats(statsGrid);
                             }
                             
-
                             const dayDistribution = processInfo.querySelector('.day-distribution');
                             if (dayDistribution) {
                                 dayDistribution.classList.add('scale-in');
@@ -209,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     mostrarVistPrevia();
                 } else {
-                    processInfo.innerHTML = `<p class="error">Error: ${data.message}</p>`;
+                    processInfo.innerHTML = `<p class="error">❌ Error: ${data.message}</p>`;
                     if (animationsReady) {
                         inventoryAnimations.shakeElement(processInfo);
                     }
@@ -217,10 +218,16 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(error => {
                 console.error('Error:', error);
-                if (animationsReady) {
-                    inventoryAnimations.completeLoading(false);
+                
+                // Detener simulación si hay error
+                if (progressInterval) {
+                    clearInterval(progressInterval);
                 }
-                processInfo.innerHTML = '<p class="error">Error al procesar el archivo</p>';
+                
+                if (animationsReady) {
+                    inventoryAnimations.completeLoading(false, 'Error de conexión');
+                }
+                processInfo.innerHTML = '<p class="error">❌ Error al procesar el archivo</p>';
                 if (animationsReady) {
                     inventoryAnimations.shakeElement(processInfo);
                 }
@@ -228,10 +235,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     downloadBtn.addEventListener('click', function () {
-        showMessage(' Iniciando descarga y limpieza automática...', 'info');
-        
+        // ANIMACIÓN DE DESCARGA
         if (animationsReady) {
+            inventoryAnimations.showSpinner('Preparando descarga...', 'Generando archivo CSV y limpiando datos');
             inventoryAnimations.pulseElement(downloadBtn, 1000);
+        } else {
+            showMessage('🔄 Iniciando descarga y limpieza automática...', 'info');
         }
 
         const iframe = document.createElement('iframe');
@@ -252,35 +261,47 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function verificarLimpiezaCompletada() {
         if (animationsReady) {
-            inventoryAnimations.showSpinner('Verificando limpieza...');
+            inventoryAnimations.updateSpinnerText('Verificando limpieza...', 'Eliminando archivos temporales');
         }
 
         fetch('includes/get_preview.php')
             .then(response => response.json())
             .then(data => {
-                if (animationsReady) {
-                    inventoryAnimations.hideSpinner();
-                }
-
                 if (data.success && data.statistics.total_registros === 0) {
-                    showMessage(' Descarga y limpieza completadas exitosamente', 'success');
+                    if (animationsReady) {
+                        inventoryAnimations.completeLoading(true, 'Descarga y limpieza completadas');
+                        setTimeout(() => {
+                            inventoryAnimations.showAnimatedMessage('✅ Proceso completado exitosamente', 'success');
+                        }, 2000);
+                    } else {
+                        showMessage('✅ Descarga y limpieza completadas exitosamente', 'success');
+                    }
                     resetearInterfaz();
                 } else if (data.success && data.statistics.total_registros > 0) {
-                    showMessage('Completando limpieza...', 'info');
+                    if (animationsReady) {
+                        inventoryAnimations.updateSpinnerText('Completando limpieza...', 'Finalizando eliminación');
+                    } else {
+                        showMessage('🔄 Completando limpieza...', 'info');
+                    }
                     setTimeout(() => {
                         realizarLimpiezaManual();
                     }, 1000);
                 } else {
-                    showMessage(' Descarga completada', 'success');
+                    if (animationsReady) {
+                        inventoryAnimations.completeLoading(true, 'Descarga completada');
+                    } else {
+                        showMessage('✅ Descarga completada', 'success');
+                    }
                     resetearInterfaz();
                 }
             })
             .catch(error => {
                 console.error('Error verificando limpieza:', error);
                 if (animationsReady) {
-                    inventoryAnimations.hideSpinner();
+                    inventoryAnimations.completeLoading(false, 'Error en verificación');
+                } else {
+                    showMessage('✅ Descarga completada', 'success');
                 }
-                showMessage(' Descarga completada', 'success');
                 resetearInterfaz();
             });
     }
@@ -312,10 +333,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function realizarLimpiezaManual() {
-        showMessage(' Realizando limpieza manual...', 'info');
-        
         if (animationsReady) {
-            inventoryAnimations.showSpinner('Limpiando archivos y datos...');
+            inventoryAnimations.showSpinner('Realizando limpieza manual...', 'Eliminando archivos y datos temporales');
+        } else {
+            showMessage('🔄 Realizando limpieza manual...', 'info');
         }
 
         fetch('includes/cleanup.php', {
@@ -323,29 +344,37 @@ document.addEventListener('DOMContentLoaded', function () {
         })
             .then(response => response.json())
             .then(data => {
-                if (animationsReady) {
-                    inventoryAnimations.hideSpinner();
-                }
-
                 if (data.success) {
-                    showMessage(` Limpieza completada: ${data.archivos_eliminados} archivos y ${data.registros_eliminados} registros eliminados`, 'success');
-                    resetearInterfaz();
+                    if (animationsReady) {
+                        inventoryAnimations.completeLoading(true, `${data.archivos_eliminados} archivos y ${data.registros_eliminados} registros eliminados`);
+                        setTimeout(() => {
+                            resetearInterfaz();
+                        }, 2000);
+                    } else {
+                        showMessage(`✅ Limpieza completada: ${data.archivos_eliminados} archivos y ${data.registros_eliminados} registros eliminados`, 'success');
+                        resetearInterfaz();
+                    }
                 } else {
-                    showMessage(` Error en la limpieza: ${data.message}`, 'error');
+                    if (animationsReady) {
+                        inventoryAnimations.completeLoading(false, data.message);
+                    } else {
+                        showMessage(`❌ Error en la limpieza: ${data.message}`, 'error');
+                    }
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 if (animationsReady) {
-                    inventoryAnimations.hideSpinner();
+                    inventoryAnimations.completeLoading(false, 'Error de conexión durante la limpieza');
+                } else {
+                    showMessage('❌ Error de conexión durante la limpieza', 'error');
                 }
-                showMessage('Error de conexión durante la limpieza', 'error');
             });
     }
 
     function mostrarVistPrevia() {
         if (animationsReady) {
-            inventoryAnimations.showSpinner('Cargando vista previa...');
+            inventoryAnimations.showSpinner('Cargando vista previa...', 'Preparando datos para visualización');
         }
 
         fetch('includes/get_preview.php')
@@ -363,10 +392,21 @@ document.addEventListener('DOMContentLoaded', function () {
                     tableBody.innerHTML = '';
 
                     const headerRow = document.createElement('tr');
-                    ['Código Elemento', 'Categoría/Descripción', 'Cantidad', 'Fecha', 'Centro Costo', 'Labor Original', 'Observaciones', 'Día Semana'].forEach(header => {
+                    ['Código Elemento', 'Categoría/Descripción', 'Cantidad', 'Fecha', 'Centro Costo', 'Labor Original', 'Observaciones', 'Día Semana'].forEach((header, index) => {
                         const th = document.createElement('th');
                         th.textContent = header;
                         headerRow.appendChild(th);
+                        
+                        // Animar headers si hay animaciones
+                        if (animationsReady) {
+                            th.style.opacity = '0';
+                            th.style.transform = 'translateY(-10px)';
+                            setTimeout(() => {
+                                th.style.transition = 'all 0.3s ease';
+                                th.style.opacity = '1';
+                                th.style.transform = 'translateY(0)';
+                            }, index * 50);
+                        }
                     });
                     tableHead.appendChild(headerRow);
 
@@ -410,22 +450,24 @@ document.addEventListener('DOMContentLoaded', function () {
                         // Animar fila por fila
                         if (animationsReady) {
                             setTimeout(() => {
-                                tr.classList.add('table-row-enter');
-                            }, index * 50);
+                                tr.style.transition = 'all 0.4s ease';
+                                tr.style.opacity = '1';
+                                tr.style.transform = 'translateX(0)';
+                            }, 500 + (index * 80));
                         }
                     });
 
                     if (data.distribucion_centros_costo) {
                         const distribucionDiv = document.getElementById('distribucion');
                         if (distribucionDiv) {
-                            let distribucionHTML = '<h4> Distribución por Centro de Costo:</h4><ul>';
+                            let distribucionHTML = '<h4>🏢 Distribución por Centro de Costo:</h4><ul>';
                             data.distribucion_centros_costo.forEach(item => {
                                 distribucionHTML += `<li><strong>${item.centro_costo_asignado}:</strong> ${item.cantidad_registros} registros</li>`;
                             });
                             distribucionHTML += '</ul>';
 
                             if (data.statistics) {
-                                distribucionHTML += '<h4> Distribución por Día de Semana:</h4><div class="day-distribution-preview">';
+                                distribucionHTML += '<h4>📊 Distribución por Día de Semana:</h4><div class="day-distribution-preview">';
                                 const diasSemana = [
                                     { nombre: 'Lunes', cantidad: data.statistics.registros_lunes || 0 },
                                     { nombre: 'Martes', cantidad: data.statistics.registros_martes || 0 },
@@ -449,7 +491,14 @@ document.addEventListener('DOMContentLoaded', function () {
                             // Animar distribución
                             if (animationsReady) {
                                 setTimeout(() => {
-                                    distribucionDiv.classList.add('fade-in');
+                                    distribucionDiv.style.opacity = '0';
+                                    distribucionDiv.style.transform = 'translateY(20px)';
+                                    distribucionDiv.style.transition = 'all 0.5s ease';
+                                    
+                                    setTimeout(() => {
+                                        distribucionDiv.style.opacity = '1';
+                                        distribucionDiv.style.transform = 'translateY(0)';
+                                    }, 100);
                                 }, 300);
                             }
                         }
@@ -457,14 +506,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     // Animar aparición de la sección de vista previa
                     if (animationsReady) {
-                        inventoryAnimations.animateSection('preview', 'slide-down');
-                        // Agregar efecto de observador para elementos que aparecen
                         setTimeout(() => {
-                            const previewElements = previewSection.querySelectorAll('h3, .day-badge, li');
-                            previewElements.forEach(element => {
-                                inventoryAnimations.observeElement(element);
-                            });
-                        }, 500);
+                            inventoryAnimations.animateSection('preview', 'slide-down');
+                            // Agregar efectos hover
+                            setTimeout(() => {
+                                inventoryAnimations.addHoverEffects('.stat-item, .day-badge, .day-stat');
+                            }, 500);
+                        }, 1000);
                     } else {
                         previewSection.style.display = 'block';
                     }
@@ -539,9 +587,42 @@ document.addEventListener('DOMContentLoaded', function () {
         csvFileInput.addEventListener('change', function(e) {
             if (e.target.files.length > 0 && animationsReady) {
                 const fileName = e.target.files[0].name;
-                inventoryAnimations.showAnimatedMessage(` Archivo seleccionado: ${fileName}`, 'info', 3000);
+                const fileSize = (e.target.files[0].size / 1024).toFixed(1) + ' KB';
+                inventoryAnimations.showAnimatedMessage(
+                    `📄 Archivo seleccionado: ${fileName} (${fileSize})`, 
+                    'info', 
+                    3000
+                );
             }
         });
+
+        // Efectos de drag & drop
+        const fileContainer = csvFileInput.parentElement;
+        if (fileContainer && animationsReady) {
+            fileContainer.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.background = 'linear-gradient(135deg, rgba(33, 150, 243, 0.1), rgba(33, 203, 243, 0.1))';
+                this.style.transform = 'scale(1.02)';
+                this.style.transition = 'all 0.2s ease';
+            });
+
+            fileContainer.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.style.background = '';
+                this.style.transform = 'scale(1)';
+            });
+
+            fileContainer.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.background = '';
+                this.style.transform = 'scale(1)';
+                
+                if (e.dataTransfer.files.length > 0) {
+                    csvFileInput.files = e.dataTransfer.files;
+                    csvFileInput.dispatchEvent(new Event('change'));
+                }
+            });
+        }
     }
 
     // Estilos adicionales para las animaciones
@@ -645,26 +726,26 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         /* Mejoras para la tabla */
-        #previewTable {
+        #dataTable {
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
             overflow: hidden;
         }
 
-        #previewTable th {
+        #dataTable th {
             background: linear-gradient(135deg, #2196F3 0%, #21CBF3 100%);
             color: white;
             padding: 12px;
             font-weight: 600;
         }
 
-        #previewTable td {
+        #dataTable td {
             padding: 10px;
             border-bottom: 1px solid #f0f0f0;
             transition: background-color 0.2s ease;
         }
 
-        #previewTable tr:hover td {
+        #dataTable tr:hover td {
             background-color: rgba(33, 150, 243, 0.05);
         }
 
@@ -689,6 +770,135 @@ document.addEventListener('DOMContentLoaded', function () {
             0% { background-position: 0 0, 0 10px, 10px -10px, -10px 0px; }
             100% { background-position: 20px 20px, 20px 30px, 30px 10px, 10px 20px; }
         }
+
+        /* Animaciones adicionales para elementos específicos */
+        .bounce-in {
+            animation: bounceIn 0.6s ease-out;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .slide-down {
+            animation: slideDown 0.5s ease-out;
+        }
+
+        .scale-in {
+            animation: scaleIn 0.4s ease-out;
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from { 
+                opacity: 0; 
+                transform: translateY(-30px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        @keyframes scaleIn {
+            from { 
+                transform: scale(0.8); 
+                opacity: 0; 
+            }
+            to { 
+                transform: scale(1); 
+                opacity: 1; 
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+
+        /* Efecto de pulso para elementos importantes */
+        .pulse-effect {
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Mejoras visuales para el contenedor de upload */
+        .file-input-container {
+            transition: all 0.3s ease;
+        }
+
+        .file-input-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Efectos para botones */
+        button {
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Mejoras para la tabla de resultados */
+        .table-container {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        /* Indicador de procesamiento */
+        .processing-indicator {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .processing-indicator::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.2), transparent);
+            animation: scan 2s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
     `;
-    document.head.appendChild(additionalStyles);
+    
+    if (!document.head.querySelector('#additional-styles')) {
+        additionalStyles.id = 'additional-styles';
+        document.head.appendChild(additionalStyles);
+    }
 });
