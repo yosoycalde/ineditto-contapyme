@@ -8,6 +8,7 @@ class InventoryAnimations {
         this.isAnimating = false;
         this.messageQueue = [];
         this.progressInterval = null;
+        this.blockedElements = new Set(); // NUEVO: rastrear elementos bloqueados
         this.init();
     }
 
@@ -328,6 +329,10 @@ class InventoryAnimations {
     // Mostrar spinner principal
     showSpinner(message = 'Procesando...', subtext = '') {
         this.hideSpinner(); // Remover spinner anterior si existe
+        this.isAnimating = true;
+
+        // Bloquear interacciones durante la carga
+        this.blockInterfaceInteractions();
 
         const overlay = document.createElement('div');
         overlay.className = 'loading-overlay';
@@ -380,12 +385,17 @@ class InventoryAnimations {
     hideSpinner() {
         if (this.currentSpinner) {
             this.currentSpinner.classList.remove('show');
+            
             setTimeout(() => {
                 if (this.currentSpinner && this.currentSpinner.parentNode) {
                     this.currentSpinner.parentNode.removeChild(this.currentSpinner);
                 }
                 this.currentSpinner = null;
                 this.progressBar = null;
+                
+                // CRÍTICO: Reactivar todos los elementos después de ocultar
+                this.reactivateInterface();
+                
             }, 300);
         }
         
@@ -393,6 +403,88 @@ class InventoryAnimations {
         if (this.progressInterval) {
             clearInterval(this.progressInterval);
             this.progressInterval = null;
+        }
+        
+        // Resetear estado de animación
+        this.isAnimating = false;
+    }
+
+    // NUEVO: Método para reactivar la interfaz
+    reactivateInterface() {
+        // Reactivar todos los botones
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(button => {
+            button.disabled = false;
+            button.style.pointerEvents = 'auto';
+            button.style.opacity = '1';
+            // Remover cualquier overlay o z-index problemático
+            button.style.position = '';
+            button.style.zIndex = '';
+        });
+
+        // Reactivar formularios
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.style.pointerEvents = 'auto';
+        });
+
+        // Reactivar inputs
+        const inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.disabled = false;
+            input.style.pointerEvents = 'auto';
+        });
+
+        // Asegurar que no hay overlays residuales
+        const overlays = document.querySelectorAll('.loading-overlay');
+        overlays.forEach(overlay => {
+            if (overlay !== this.currentSpinner && overlay.parentNode) {
+                overlay.parentNode.removeChild(overlay);
+            }
+        });
+
+        // Limpiar elementos bloqueados
+        this.blockedElements.clear();
+
+        // Restaurar el scroll del body si estaba bloqueado
+        document.body.style.overflow = '';
+        
+        console.log('✅ Interfaz reactivada - todos los botones deberían funcionar');
+    }
+
+    // NUEVO: Bloquear interacciones de la interfaz
+    blockInterfaceInteractions() {
+        // Bloquear todos los botones principales
+        const buttons = document.querySelectorAll('button:not(.loading-overlay button)');
+        buttons.forEach(button => this.blockElement(button));
+
+        // Bloquear formularios
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.style.pointerEvents = 'none';
+        });
+
+        // Prevenir scroll del body
+        document.body.style.overflow = 'hidden';
+    }
+
+    // NUEVO: Método para bloquear elementos durante carga
+    blockElement(element) {
+        if (element) {
+            this.blockedElements.add(element);
+            element.disabled = true;
+            element.style.pointerEvents = 'none';
+            element.style.opacity = '0.6';
+        }
+    }
+
+    // NUEVO: Método para desbloquear elementos específicos
+    unblockElement(element) {
+        if (element) {
+            this.blockedElements.delete(element);
+            element.disabled = false;
+            element.style.pointerEvents = 'auto';
+            element.style.opacity = '1';
         }
     }
 
@@ -491,9 +583,9 @@ class InventoryAnimations {
                     <div class="loading-subtext">${success ? 'Los datos están listos para usar' : 'Por favor, revise el archivo e intente nuevamente'}</div>
                 `;
 
-                // Auto-ocultar después de mostrar resultado
+                // CRÍTICO: Auto-ocultar y reactivar interfaz
                 setTimeout(() => {
-                    this.hideSpinner();
+                    this.hideSpinner(); // Esto llamará a reactivateInterface()
                 }, success ? 2000 : 3000);
             }
         }, 500);
@@ -688,6 +780,33 @@ class InventoryAnimations {
 
         observer.observe(element);
     }
+
+    // NUEVO: Método de emergencia para forzar reactivación
+    forceReactivate() {
+        this.isAnimating = false;
+        
+        // Remover todos los overlays
+        const overlays = document.querySelectorAll('.loading-overlay');
+        overlays.forEach(overlay => {
+            if (overlay.parentNode) {
+                overlay.parentNode.removeChild(overlay);
+            }
+        });
+        
+        this.currentSpinner = null;
+        this.progressBar = null;
+        
+        // Limpiar intervalos
+        if (this.progressInterval) {
+            clearInterval(this.progressInterval);
+            this.progressInterval = null;
+        }
+        
+        // Reactivar todo
+        this.reactivateInterface();
+        
+        console.log('🔧 Reactivación forzada completada');
+    }
 }
 
 // Instanciar el sistema de animaciones cuando se carga el DOM
@@ -705,6 +824,10 @@ function showLoadingAnimation(message = 'Procesando...') {
 function hideLoadingAnimation() {
     if (window.inventoryAnimations) {
         window.inventoryAnimations.hideSpinner();
+        // Asegurar reactivación
+        setTimeout(() => {
+            window.inventoryAnimations.reactivateInterface();
+        }, 100);
     }
 }
 
@@ -720,8 +843,37 @@ function completeLoadingAnimation(success = true, message = '') {
     }
 }
 
+// NUEVO: Función de emergencia disponible globalmente
+function forceReactivateInterface() {
+    if (window.inventoryAnimations) {
+        window.inventoryAnimations.forceReactivate();
+    }
+}
+
+// NUEVO: Detectar si los botones están bloqueados y auto-reparar
+function checkButtonsAndRepair() {
+    const buttons = document.querySelectorAll('button');
+    let blockedCount = 0;
+    
+    buttons.forEach(button => {
+        if (button.disabled || button.style.pointerEvents === 'none') {
+            blockedCount++;
+        }
+    });
+    
+    if (blockedCount > 0 && !document.querySelector('.loading-overlay')) {
+        console.warn(`⚠️ Detectados ${blockedCount} botones bloqueados sin spinner activo. Reparando...`);
+        forceReactivateInterface();
+    }
+}
+
+// Auto-verificar cada 5 segundos si hay botones bloqueados sin razón
+setInterval(checkButtonsAndRepair, 5000);
+
 // Exportar para uso global
 window.showLoadingAnimation = showLoadingAnimation;
 window.hideLoadingAnimation = hideLoadingAnimation;
 window.updateLoadingProgress = updateLoadingProgress;
 window.completeLoadingAnimation = completeLoadingAnimation;
+window.forceReactivateInterface = forceReactivateInterface;
+window.checkButtonsAndRepair = checkButtonsAndRepair;
