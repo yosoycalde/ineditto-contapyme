@@ -411,7 +411,6 @@ class InventoryAnimations {
         }, 5000);
     }
 
-    // Completar animación de carga (llamar desde main.js)
     completeLoading(success = true) {
         this.updateProgress(100);
         setTimeout(() => {
@@ -420,9 +419,7 @@ class InventoryAnimations {
         }, 500);
     }
 
-    // Configurar animaciones de botones
     setupButtonAnimations() {
-        // Animar todos los botones
         const buttons = document.querySelectorAll('button, input[type="submit"]');
         buttons.forEach(button => {
             if (!button.classList.contains('animated-button')) {
@@ -431,7 +428,6 @@ class InventoryAnimations {
         });
     }
 
-    // Configurar animaciones drag & drop
     setupDragDropAnimations() {
         const fileInput = document.getElementById('csvFile');
         if (fileInput && fileInput.parentElement) {
@@ -459,7 +455,6 @@ class InventoryAnimations {
         }
     }
 
-    // Animar elementos al entrar en vista
     setupIntersectionObserver() {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -469,16 +464,13 @@ class InventoryAnimations {
             });
         }, { threshold: 0.1 });
 
-        // Observar elementos que se cargan dinámicamente
         const observeElement = (element) => {
             if (element) observer.observe(element);
         };
 
-        // Función pública para observar nuevos elementos
         this.observeElement = observeElement;
     }
 
-    // Animar aparición de secciones
     animateSection(sectionId, animationType = 'slide-down') {
         const section = document.getElementById(sectionId);
         if (section) {
@@ -487,7 +479,6 @@ class InventoryAnimations {
         }
     }
 
-    // Animar ocultación de secciones
     hideSection(sectionId, callback = null) {
         const section = document.getElementById(sectionId);
         if (section) {
@@ -500,7 +491,6 @@ class InventoryAnimations {
         }
     }
 
-    // Animar tabla (filas)
     animateTable(tableId) {
         const table = document.getElementById(tableId);
         if (table) {
@@ -516,7 +506,6 @@ class InventoryAnimations {
         }
     }
 
-    // Animar contadores (números)
     animateCounter(element, finalValue, duration = 1000) {
         const startValue = 0;
         const increment = finalValue / (duration / 16);
@@ -537,14 +526,12 @@ class InventoryAnimations {
         updateCounter();
     }
 
-    // Animar estadísticas
     animateStats(statsContainer) {
         const statItems = statsContainer.querySelectorAll('.stat-item');
         statItems.forEach((item, index) => {
             setTimeout(() => {
                 item.classList.add('scale-in');
 
-                // Animar números si los hay
                 const numberElement = item.querySelector('strong + text, strong');
                 if (numberElement) {
                     const match = numberElement.textContent.match(/\d+/);
@@ -557,7 +544,6 @@ class InventoryAnimations {
         });
     }
 
-    // Mensaje animado mejorado
     showAnimatedMessage(message, type = 'info', duration = 6000) {
         let messageDiv = document.getElementById('globalMessage');
 
