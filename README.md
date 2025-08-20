@@ -406,3 +406,14 @@ CREATE TABLE elementos (
 3. **Corrección de datos:** Limpieza y reprocesamiento
 4. **Auditoría:** Vista previa y verificación antes de descarga
 5. **Integración:** Exportación compatible con ContaPyme
+
+
+
+
+
+
+
+
+
+Codigo Echo por: Juan Jose Calderon Benjumea
+Para 
