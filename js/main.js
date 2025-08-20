@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (actionButtons) {
         const cleanupBtn = document.createElement('button');
         cleanupBtn.id = 'cleanupBtn';
-        cleanupBtn.innerHTML = '🧹 Limpiar Archivos y Datos';
+        cleanupBtn.innerHTML = 'Limpiar Archivos y Datos';
         cleanupBtn.style.display = 'none';
         cleanupBtn.style.marginLeft = '15px';
         actionButtons.appendChild(cleanupBtn);
@@ -60,9 +60,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 
                 if (data.success) {
-                    showMessage(`✅ ${data.message} (${data.records} registros)`, 'success');
+                    showMessage(` ${data.message} (${data.records} registros)`, 'success');
                 } else {
-                    showMessage(`❌ Error al importar ${tipo}: ${data.message}`, 'error');
+                    showMessage(` Error al importar ${tipo}: ${data.message}`, 'error');
                 }
             })
             .catch(error => {
@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (animationsReady) {
                     inventoryAnimations.hideSpinner();
                 }
-                showMessage(`❌ Error de conexión al importar ${tipo}`, 'error');
+                showMessage(` Error de conexión al importar ${tipo}`, 'error');
             });
     }
 
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function () {
             inventoryAnimations.showProgressBar();
         }
         
-        processInfo.innerHTML = `<p class="info">📊 Procesando archivo ${fileExt.toUpperCase()} de inventario y distribuyendo cantidades por día de semana...</p>`;
+        processInfo.innerHTML = `<p class="info"> Procesando archivo ${fileExt.toUpperCase()} de inventario y distribuyendo cantidades por día de semana...</p>`;
         
         // Animar aparición de la sección de resultados
         if (animationsReady) {
@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         stats.registros_domingo > 0) {
                         distribucionDias = `
                             <div class="day-distribution">
-                                <h4>📅 Distribución por día de semana:</h4>
+                                <h4> Distribución por día de semana:</h4>
                                 <div class="day-stats">
                                     <span class="day-stat">Lunes: ${stats.registros_lunes || 0}</span>
                                     <span class="day-stat">Martes: ${stats.registros_martes || 0}</span>
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     processInfo.innerHTML = `
                     <div class="success">
-                        <h3>✅ ${data.message}</h3>
+                        <h3> ${data.message}</h3>
                         <div class="stats-grid">
                             <div class="stat-item">
                                 <strong>Registros procesados:</strong> <span class="counter">${data.records}</span>
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                         ${distribucionDias}
                         <div class="info" style="margin-top: 15px;">
-                            <p>📋 <strong>Importante:</strong> Las cantidades se han distribuido automáticamente según el día de la semana correspondiente a la fecha FSOPORT. Después de descargar el archivo CSV, todos los archivos temporales y datos procesados se eliminarán automáticamente del servidor.</p>
+                            <p> <strong>Importante:</strong> Las cantidades se han distribuido automáticamente según el día de la semana correspondiente a la fecha FSOPORT. Después de descargar el archivo CSV, todos los archivos temporales y datos procesados se eliminarán automáticamente del servidor.</p>
                         </div>
                     </div>`;
 
@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     downloadBtn.addEventListener('click', function () {
-        showMessage('📥 Iniciando descarga y limpieza automática...', 'info');
+        showMessage(' Iniciando descarga y limpieza automática...', 'info');
         
         // Agregar efecto de pulso al botón
         if (animationsReady) {
@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 if (data.success && data.statistics.total_registros === 0) {
-                    showMessage('✅ Descarga y limpieza completadas exitosamente', 'success');
+                    showMessage(' Descarga y limpieza completadas exitosamente', 'success');
                     resetearInterfaz();
                 } else if (data.success && data.statistics.total_registros > 0) {
                     showMessage('🔄 Completando limpieza...', 'info');
@@ -300,7 +300,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         realizarLimpiezaManual();
                     }, 1000);
                 } else {
-                    showMessage('✅ Descarga completada', 'success');
+                    showMessage(' Descarga completada', 'success');
                     resetearInterfaz();
                 }
             })
@@ -309,7 +309,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (animationsReady) {
                     inventoryAnimations.hideSpinner();
                 }
-                showMessage('✅ Descarga completada', 'success');
+                showMessage(' Descarga completada', 'success');
                 resetearInterfaz();
             });
     }
@@ -357,10 +357,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 if (data.success) {
-                    showMessage(`✅ Limpieza completada: ${data.archivos_eliminados} archivos y ${data.registros_eliminados} registros eliminados`, 'success');
+                    showMessage(` Limpieza completada: ${data.archivos_eliminados} archivos y ${data.registros_eliminados} registros eliminados`, 'success');
                     resetearInterfaz();
                 } else {
-                    showMessage(`❌ Error en la limpieza: ${data.message}`, 'error');
+                    showMessage(` Error en la limpieza: ${data.message}`, 'error');
                 }
             })
             .catch(error => {
