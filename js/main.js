@@ -447,7 +447,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (data.distribucion_centros_costo) {
                         const distribucionDiv = document.getElementById('distribucion');
                         if (distribucionDiv) {
-                            let distribucionHTML = '<h4>📊 Distribución por Centro de Costo:</h4><ul>';
+                            let distribucionHTML = '<h4> Distribución por Centro de Costo:</h4><ul>';
                             data.distribucion_centros_costo.forEach(item => {
                                 distribucionHTML += `<li><strong>${item.centro_costo_asignado}:</strong> ${item.cantidad_registros} registros</li>`;
                             });
@@ -455,7 +455,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                             // Agregar información sobre distribución por días
                             if (data.statistics) {
-                                distribucionHTML += '<h4>📅 Distribución por Día de Semana:</h4><div class="day-distribution-preview">';
+                                distribucionHTML += '<h4> Distribución por Día de Semana:</h4><div class="day-distribution-preview">';
                                 const diasSemana = [
                                     { nombre: 'Lunes', cantidad: data.statistics.registros_lunes || 0 },
                                     { nombre: 'Martes', cantidad: data.statistics.registros_martes || 0 },
@@ -569,7 +569,7 @@ document.addEventListener('DOMContentLoaded', function () {
         csvFileInput.addEventListener('change', function(e) {
             if (e.target.files.length > 0 && animationsReady) {
                 const fileName = e.target.files[0].name;
-                inventoryAnimations.showAnimatedMessage(`📁 Archivo seleccionado: ${fileName}`, 'info', 3000);
+                inventoryAnimations.showAnimatedMessage(` Archivo seleccionado: ${fileName}`, 'info', 3000);
             }
         });
     }
