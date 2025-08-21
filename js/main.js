@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (animationsReady) {
                     inventoryAnimations.hideSpinner();
                 }
-                showMessage(`❌ Error de conexión al importar ${tipo}`, 'error');
+                showMessage(`Error de conexión al importar ${tipo}`, 'error');
             });
     }
 
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function () {
             );
         }
         
-        processInfo.innerHTML = `<p class="info">🔄 Procesando archivo ${fileExt.toUpperCase()} de inventario y distribuyendo cantidades por día de semana...</p>`;
+        processInfo.innerHTML = `<p class="info">Procesando archivo ${fileExt.toUpperCase()} de inventario y distribuyendo cantidades por día de semana...</p>`;
         
         if (animationsReady) {
             inventoryAnimations.animateSection('results', 'slide-down');
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         stats.registros_domingo > 0) {
                         distribucionDias = `
                             <div class="day-distribution">
-                                <h4>📅 Distribución por día de semana:</h4>
+                                <h4>Distribución por día de semana:</h4>
                                 <div class="day-stats">
                                     <span class="day-stat">Lunes: ${stats.registros_lunes || 0}</span>
                                     <span class="day-stat">Martes: ${stats.registros_martes || 0}</span>
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     processInfo.innerHTML = `
                     <div class="success">
-                        <h3>✅ ${data.message}</h3>
+                        <h3>${data.message}</h3>
                         <div class="stats-grid">
                             <div class="stat-item">
                                 <strong>Registros procesados:</strong> <span class="counter">${data.records}</span>
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                         ${distribucionDias}
                         <div class="info" style="margin-top: 15px;">
-                            <p>📊 <strong>Importante:</strong> Las cantidades se han distribuido automáticamente según el día de la semana correspondiente a la fecha FSOPORT. Después de descargar el archivo CSV, todos los archivos temporales y datos procesados se eliminarán automáticamente del servidor.</p>
+                            <p><strong>Importante:</strong> Las cantidades se han distribuido automáticamente según el día de la semana correspondiente a la fecha FSOPORT. Después de descargar el archivo CSV, todos los archivos temporales y datos procesados se eliminarán automáticamente del servidor.</p>
                         </div>
                     </div>`;
 
@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function () {
             inventoryAnimations.showSpinner('Preparando descarga...', 'Generando archivo CSV y limpiando datos');
             inventoryAnimations.pulseElement(downloadBtn, 1000);
         } else {
-            showMessage('🔄 Iniciando descarga y limpieza automática...', 'info');
+            showMessage('Iniciando descarga y limpieza automática...', 'info');
         }
 
         const iframe = document.createElement('iframe');
@@ -271,17 +271,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (animationsReady) {
                         inventoryAnimations.completeLoading(true, 'Descarga y limpieza completadas');
                         setTimeout(() => {
-                            inventoryAnimations.showAnimatedMessage('✅ Proceso completado exitosamente', 'success');
+                            inventoryAnimations.showAnimatedMessage('Proceso completado exitosamente', 'success');
                         }, 2000);
                     } else {
-                        showMessage('✅ Descarga y limpieza completadas exitosamente', 'success');
+                        showMessage('Descarga y limpieza completadas exitosamente', 'success');
                     }
                     resetearInterfaz();
                 } else if (data.success && data.statistics.total_registros > 0) {
                     if (animationsReady) {
                         inventoryAnimations.updateSpinnerText('Completando limpieza...', 'Finalizando eliminación');
                     } else {
-                        showMessage('🔄 Completando limpieza...', 'info');
+                        showMessage('Completando limpieza...', 'info');
                     }
                     setTimeout(() => {
                         realizarLimpiezaManual();
@@ -290,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (animationsReady) {
                         inventoryAnimations.completeLoading(true, 'Descarga completada');
                     } else {
-                        showMessage('✅ Descarga completada', 'success');
+                        showMessage('Descarga completada', 'success');
                     }
                     resetearInterfaz();
                 }
@@ -300,7 +300,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (animationsReady) {
                     inventoryAnimations.completeLoading(false, 'Error en verificación');
                 } else {
-                    showMessage('✅ Descarga completada', 'success');
+                    showMessage('Descarga completada', 'success');
                 }
                 resetearInterfaz();
             });
@@ -336,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (animationsReady) {
             inventoryAnimations.showSpinner('Realizando limpieza manual...', 'Eliminando archivos y datos temporales');
         } else {
-            showMessage('🔄 Realizando limpieza manual...', 'info');
+            showMessage('Realizando limpieza manual...', 'info');
         }
 
         fetch('includes/cleanup.php', {
@@ -351,14 +351,14 @@ document.addEventListener('DOMContentLoaded', function () {
                             resetearInterfaz();
                         }, 2000);
                     } else {
-                        showMessage(`✅ Limpieza completada: ${data.archivos_eliminados} archivos y ${data.registros_eliminados} registros eliminados`, 'success');
+                        showMessage(`Limpieza completada: ${data.archivos_eliminados} archivos y ${data.registros_eliminados} registros eliminados`, 'success');
                         resetearInterfaz();
                     }
                 } else {
                     if (animationsReady) {
                         inventoryAnimations.completeLoading(false, data.message);
                     } else {
-                        showMessage(`❌ Error en la limpieza: ${data.message}`, 'error');
+                        showMessage(`Error en la limpieza: ${data.message}`, 'error');
                     }
                 }
             })
@@ -367,7 +367,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (animationsReady) {
                     inventoryAnimations.completeLoading(false, 'Error de conexión durante la limpieza');
                 } else {
-                    showMessage('❌ Error de conexión durante la limpieza', 'error');
+                    showMessage('Error de conexión durante la limpieza', 'error');
                 }
             });
     }
@@ -460,7 +460,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (data.distribucion_centros_costo) {
                         const distribucionDiv = document.getElementById('distribucion');
                         if (distribucionDiv) {
-                            let distribucionHTML = '<h4>🏢 Distribución por Centro de Costo:</h4><ul>';
+                            let distribucionHTML = '<h4>Distribución por Centro de Costo:</h4><ul>';
                             data.distribucion_centros_costo.forEach(item => {
                                 distribucionHTML += `<li><strong>${item.centro_costo_asignado}:</strong> ${item.cantidad_registros} registros</li>`;
                             });
@@ -589,7 +589,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const fileName = e.target.files[0].name;
                 const fileSize = (e.target.files[0].size / 1024).toFixed(1) + ' KB';
                 inventoryAnimations.showAnimatedMessage(
-                    `📄 Archivo seleccionado: ${fileName} (${fileSize})`, 
+                    `Archivo seleccionado: ${fileName} (${fileSize})`, 
                     'info', 
                     3000
                 );

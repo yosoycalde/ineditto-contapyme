@@ -635,10 +635,10 @@ class InventoryAnimations {
 
     getMessageIcon(type) {
         switch (type) {
-            case 'success': return '✅';
-            case 'error': return '❌';
-            case 'info': return 'ℹ️';
-            default: return '📝';
+            case 'success': return '';
+            case 'error': return '';
+            case 'info': return '';
+            default: return '';
         }
     }
 
@@ -805,7 +805,7 @@ class InventoryAnimations {
         // Reactivar todo
         this.reactivateInterface();
         
-        console.log('🔧 Reactivación forzada completada');
+        console.log(' Reactivación forzada completada');
     }
 }
 
@@ -862,7 +862,7 @@ function checkButtonsAndRepair() {
     });
     
     if (blockedCount > 0 && !document.querySelector('.loading-overlay')) {
-        console.warn(`⚠️ Detectados ${blockedCount} botones bloqueados sin spinner activo. Reparando...`);
+        console.warn(` Detectados ${blockedCount} botones bloqueados sin spinner activo. Reparando...`);
         forceReactivateInterface();
     }
 }
