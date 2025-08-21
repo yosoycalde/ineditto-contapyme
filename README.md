@@ -417,3 +417,421 @@ CREATE TABLE elementos (
 
 Codigo Hecho por: Juan Jose Calderon Benjumea
 Para: Empresa Manizaleña
+
+
+
+
+
+# Detailed Analysis of the Inedito Inventory System → ContaPyme
+
+## General Description of the System
+
+This system is an inventory file processing interface that converts data from the Unreleased format to the ContaPyme format. The system handles CSV, XLSX and XLS files, assigns cost centers automatically, distributes quantities by days of the week and generates CSV files compatible with ContaPyme.
+
+## Architecture of the System
+
+### File Structure
+
+```
+├── config/
+│ ├── database.php # Database configuration
+│ ├── error.html # Error page
+│ │── handler.php # Main functions of the system
+├── includes/
+│ ├── cleanup.php # Cleaning of files and data
+│ ├── cleanup_status.php # State of cleanliness
+│ ├── download_csv.php # Download of the processed file
+│ ├── functions.php # Auxiliary functions
+│ ├── get_preview.php # Data preview
+│ ├── manager-accountant.php # Management of accountants
+│ │── upload_handler.php # Handling of uploads
+├── required-files/
+│ ├── COST CENTER.csv
+│ │── INVENTORY ITEMS.csv
+├── css/
+│ ├── style.css
+│ │── error.css
+├── js/
+│ │── main.js
+└── index.html # User interface
+```
+
+## Component-by-component Analysis
+
+### 1. Database.php - Database Configuration
+
+"'php
+class Database
+{
+    private $host = 'localhost';
+    private $db_name = 'ineditto_contapyme';
+    private $username = 'root';
+    private $password = ";
+    private $conn;
+}
+```
+
+** Functionality:**
+- Singleton class for handling PDO connections
+- Centralized database configuration
+- Connection error handling with PDO exceptions
+
+### 2. Handler.php - Core of the System
+
+#### A) Consecutive Number Management (INUMSOP)
+
+"'php
+function Get Nextinumsop()
+{
+    // Implements an atomic counter using transactions
+    $conn->StartTransaction();
+    
+    // Check if the counter exists
+    $checkQuery = "SELECT current_value FROM counters WHERE name = 'INUMSOP'";
+    
+    // If it doesn't exist, create it with initial value 1
+    // If it exists, gets the current value and increments
+    
+    $conn->commit();
+    return $Next number;
+}
+```
+
+** Features:**
+- **Atomicity:** Use transactions to avoid duplicate numbers
+- **Auto-initialization:** Creates the counter if it does not exist
+-**Rollback:** Reverts changes in case of error
+
+####B) Distribution by Weekdays
+
+"'php
+function Distribuircumberweekly($date, $quantity)
+{
+    // Supports multiple date formats:
+    // - Y-m-d (2024-01-15)
+    // - d/m/Y (15/01/2024)
+    // - j/n/Y (1/15/2024)
+    
+    $Weekday = $dateObj->format('N'); // 1=Monday, 7=Sunday
+    
+    switch ($Weekday) {
+        case 1: $distribution['QCANTLUN'] = floatval($amount); break;
+        case 2: $distribution['QCANTMAR'] = floatval($amount); break;
+        // ... etc
+    }
+}
+```
+
+** Business Logic:**
+- Take the date of the movement (FSOPORT)
+- Determine the day of the week
+- Allocate the full amount to the corresponding day
+- The other days are set to NULL
+
+####C) Allocation of Cost Centers
+
+"'php
+function Get Centrocosto($ilabor, $codigo_elemento)
+{
+    // Priority 1: Direct mapping by ILABOR
+    $mapeoIlabor = [
+        'PERIODICALS' => '11212117001',
+        'PULICOMERCIALES' => '11212417001',
+        'MAGAZINES' => '11212317001',
+        // ...
+    ];
+    
+    // Priority 2: Database search by ILABOR
+    
+    // Priority 3: Direct mapping by element code
+    $Mapeoelement = [
+        '76001' => '11212317001',
+        '76019' => '11212417001',
+        // ... (more than 200 maps)
+    ];
+    
+    // Priority 4: Database search by item
+    
+    // Default: '1121231700'
+}
+```
+
+**Allocation algorithm:**
+1. **Direct LABOR:** Search in hardcoded mapping
+2. **ILABOR fuzzy:** Search LIKE in database
+3. **Direct element:** Mapping by element code
+4. **BD Element:** Query table elements
+5. **Default:** Default cost center
+
+#### D) Excel File Conversion
+
+"'php
+function CONVERTXLSXACSVNATIVE($archivoXLSX)
+{
+    // Use ZipArchive to read XLSX files
+    $zip = new ZipArchive();
+    
+    // Lee shared strings (shared strings)
+    $SharedStrings = [];
+    if (($sharedStringsXML = $zip->getFromName('xl/SharedStrings.xml'))!== false) {
+        // XML PARSEA of shared strings
+    }
+    
+    // Read the first worksheet
+    $worksheetXML = $zip->getFromName('xl/worksheets/sheet1.xml');
+    
+    // Convert to CSV
+    foreach ($xml->sheetData->row as $row) {
+        // Processes each cell, handles shared string references
+        fputcsv($csvFile, $rowData);
+    }
+}
+```
+
+** Technical Characteristics:**
+- **No external libraries:** Native implementation with ZipArchive
+-**Handling of shared strings:** Full support for Excel shared strings
+- **Cell references:** Converts references such as A1, B2 to numeric indexes
+- **Automatic cleaning:** Deletes temporary files
+
+### 3. Upload Handler - File Processing
+
+"'php
+// Supports three types of operations:
+if ($_POST['action'] === 'import_centers') {
+    // Import cost centers from CSV/Excel
+}
+if ($_POST['action'] === 'import_elements') {
+    // Import inventory items from CSV/Excel
+}
+if (isset($_FILES['csvFile'])) {
+    // Processes main inventory file
+}
+```
+
+** Processing Flow:**
+1. **Validation:** Verify file extension
+2. **Upload:** Save file with unique timestamp
+3. **Conversion:** Convert Excel to CSV if necessary
+4. **Processing:** Executes type-specific logic
+5. **Cleaning:** Deletes temporary files
+6. **JSON response:** Returns statistics and status
+
+### 4. Cleaning System
+
+#### Cleanup.php - Complete Cleaning
+"'php
+function Performcomplete cleaning()
+{
+    $Deletedfiles = limpiarArchivosTemporales();
+    $Registersremoved = Clear Timestablishmentinventaries();
+    
+    return [
+        'success' => true,
+        'archives_removed' => $Archivesremoved,
+        'registros_eliminados' => $registrosEliminados
+    ];
+}
+```
+
+#### Cleanup Status.php - Status and Forced Cleanup
+"'php
+function Check this cleaning()
+{
+    // Account records in inventory_temp
+    // Account temporary files in uploads/
+    // Determines if the system is "clean"
+}
+```
+
+### 5. Preview System - Data Preview
+
+"'php
+// 1. Verify that there is processed data
+// 2. View inventory data_temp
+// 3. Generate CSV with specific headers
+// 4. Apply UTF-8 format with BOM
+// 5. Performs automatic cleaning after unloading
+```
+
+**Headers of the generated CSV**:
+- IEMP, FSOPORT, ITDSOP, INUMSOP, INVENTORY
+- IRESOURCE, ICCSUBCC, ILABOR
+- QCANTLUN, QCANTMAR, QCANTMIE, QCANTJUE, QCANTVIE, QCANTSAB, QCANTDOM
+- SOBSERVAC
+
+## 7. Preview ('includes/get_preview.php`)
+
+Provides statistical information:
+- Last 15 records processed
+- General statistics (total, records without labor, etc.)
+- Distribution of cost centers
+- Status of the INUMSOP counter
+- Verification of integrity
+
+## 8. Management of the Accountant ('includes/manager-accountant.php`)
+
+REST API to manage the INUMSOP counter:
+
+### Endpoints GET:
+- `?action=state`: Complete state of the system
+- `?action=next': Next issue available
+- `?action=validate&number=X`: Validate if number exists
+
+### Endpoints POST:
+- '{"action":"reset","value":X}': Reset counter
+- '{"action":"increment"}': Manually increment
+- '{"action":"set","value":X}': Set specific value
+
+## 9. File Upload ('includes/upload_handler.php`)
+
+Handles three types of operations:
+
+###9.1 Import Cost Centers
+"'php
+// Headers for CSV download
+header('Content-Type: text/csv; charset= utf-8');
+header('Content-Arrangement: attachment; filename="contapyme_' . date('Y-m-d_H-i-s'). '.csv"');
+
+// BOM for UTF-8
+fprintf($csvOutput, chr(0xEF). chr(0xBB) . chr(0xBF));
+
+// ContaPyme specific headers
+$headers = ['IEMP', 'FSOPORT', 'ITDSOP', 'INUMSOP', 'INVENTORY', 
+           'IRECOURSE', 'ICCSUBCC', 'ILABOR', 'QCANTLUN', 'QCANTMAR', 
+           'QCANTMIE', 'QCANTJUE', 'QCANTVIE', 'QCANTSAB', 'QCANTDOM', 'SOBSERVAC'];
+
+// ILABOR is always shipped empty (ContaPyme requirement)
+$csvRow[7] = "; // Empty word
+
+// Automatic cleaning after unloading
+Perform thorough cleaning($conn);
+```
+
+## Database Structure
+
+### Main Tables
+
+#### inventory_temp
+"'sql
+CREATE TABLE inventory_temp (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    IEMP VARCHAR(10),
+    FSOPORT DATE,
+    ITDSOP VARCHAR(10),
+    INUMSOP INT,
+    INVENTORY VARCHAR(10),
+    IRECOURSE VARCHAR(50),
+    ICCSUBCC VARCHAR(20),
+    ILABOR VARCHAR(100),
+    QCANTLUN DECIMAL(10,2),
+    QCANTMAR DECIMAL(10,2),
+    QCANTMIE DECIMAL(10,2),
+    QCANTJUE DECIMAL(10,2),
+    QCANTVIE DECIMAL(10,2),
+    QCANTSAB DECIMAL(10,2),
+    DECIMAL QCANTDOM(10,2),
+    SOBSERVAC TEXT,
+    centro_costo_asignado VARCHAR(20),
+    date_processing TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### accountants
+"'sql
+CREATE TABLE contadores (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) UNIQUE,
+    valor_actual INT NOT NULL DEFAULT 0,
+    date_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+#### centros_costs
+"'sql
+CREATE TABLE centros_costs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    VARCHAR code(20) UNIQUE,
+    name VARCHAR(100)
+);
+```
+
+#### elements
+"'sql
+CREATE TABLE elements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    VARCHAR code(20) UNIQUE,
+    reference VARCHAR(100),
+    description VARCHAR(200),
+    centre_costo_1 VARCHAR(20),
+    centre_costo_2 VARCHAR(20),
+    centre_costo_3 VARCHAR(20),
+    centre_costo_4 VARCHAR(20),
+    centre_costo_5 VARCHAR(20)
+);
+```
+
+## Complete Data Flow
+
+### 1. File Upload
+1. User selects file (CSV/XLSX/XLS)
+2. System validates format
+3. If it's Excel, convert to CSV using ZipArchive
+4. Save temporary file with timestamp
+
+### 2. Inventory Processing
+1. Read headers and clean BOM UTF-8
+2. Processes row by row:
+   - Gets next INUMSOP (atomic)
+   - Determines cost center (4 priority levels)
+   - Distributes quantity according to FSOPORT weekday
+   - Insert in inventory_temp
+
+### 3. Preview
+1. Check the last processed records
+2. Generates statistics (totals, distribution, completeness)
+3. Displays information of the INUMSOP counter
+
+### 4. Download
+1. View all inventory records_temp
+2. Generates CSV with specific format ContaPyme
+3. Automatically cleans temporary files and data
+
+## Outstanding Technical Features
+
+### Robustness
+- **Atomic transactions** for consecutive numbers
+-**Exception handling** in all operations
+- **Automatic rollback** in case of errors
+- **Data integrity validation**
+
+### Flexibility
+- **Multiple file formats** (CSV, XLSX, XLS)
+- **Multiple date formats**
+- **Configurable mapping** of cost centers
+- **Manual and automatic cleaning system**
+
+### Performance
+- **Batch processing** for large files
+- **Optimized queries** with LIMIT and ORDER BY
+- **Automatic cleaning** of temporary resources
+- **Indexes in key fields** (INUMSOP, codes)
+
+### Security
+- **Validation of file types**
+- **Sanitization of file names**
+- **Prepared statements** to avoid SQL injection
+- **Error logging** for audit
+
+## Use Cases of the System
+
+1. **Daily processing:** Regular inventory files
+2. **Initial configuration:** Loading of cost centers and elements
+3. **Data correction:** Cleaning and reprocessing
+4. **Audit:** Preview and verification before download
+5. **Integration:** Export compatible with ContaPyme
+
+
+
+Code Made by: Juan Jose Calderon Benjumea
+For: Manizales Company
