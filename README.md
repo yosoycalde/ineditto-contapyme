@@ -415,5 +415,5 @@ CREATE TABLE elementos (
 
 
 
-Codigo Echo por: Juan Jose Calderon Benjumea
+Codigo Hecho por: Juan Jose Calderon Benjumea
 Para: Empresa Manizaleña

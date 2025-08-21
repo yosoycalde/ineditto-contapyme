@@ -16,9 +16,16 @@ try {
     }
     
     $query = "SELECT IEMP, FSOPORT, ITDSOP, INUMSOP, INVENTARIO, IRECURSO, 
-                     centro_costo_asignado as ICCSUBCC, ILABOR, 
-                     QCANTLUN, QCANTMAR, QCANTMIE, QCANTJUE, QCANTVIE, QCANTSAB, QCANTDOM, 
-                     SOBSERVAC 
+                     centro_costo_asignado as ICCSUBCC, 
+                     CONCAT(
+                         COALESCE(ILABOR, ''),
+                         CASE 
+                             WHEN COALESCE(ILABOR, '') != '' AND COALESCE(SOBSERVAC, '') != '' THEN ' - '
+                             ELSE ''
+                         END,
+                         COALESCE(SOBSERVAC, '')
+                     ) as ILABOR_CONCATENADO,
+                     QCANTLUN, QCANTMAR, QCANTMIE, QCANTJUE, QCANTVIE, QCANTSAB, QCANTDOM 
               FROM inventarios_temp 
               ORDER BY INUMSOP ASC";
     $stmt = $conn->prepare($query);
@@ -74,7 +81,7 @@ try {
             $row['QCANTVIE'] ?? '',
             $row['QCANTSAB'] ?? '',
             $row['QCANTDOM'] ?? '',
-            $row['SOBSERVAC'] ?? ''
+            $row['ILABOR_CONCATENADO'] ?? ''
         ];
         
         fputcsv($csvOutput, $csvRow);
