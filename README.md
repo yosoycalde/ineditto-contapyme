@@ -460,7 +460,7 @@ This system is an inventory file processing interface that converts data from th
 
 ### 1. Database.php - Database Configuration
 
-"'php
+```php
 class Database
 {
     private $host = 'localhost';
@@ -480,7 +480,7 @@ class Database
 
 #### A) Consecutive Number Management (INUMSOP)
 
-"'php
+```php
 function Get Nextinumsop()
 {
     // Implements an atomic counter using transactions
@@ -502,9 +502,9 @@ function Get Nextinumsop()
 - **Auto-initialization:** Creates the counter if it does not exist
 -**Rollback:** Reverts changes in case of error
 
-####B) Distribution by Weekdays
+#### B) Distribution by Weekdays
 
-"'php
+```php
 function Distribuircumberweekly($date, $quantity)
 {
     // Supports multiple date formats:
@@ -528,9 +528,9 @@ function Distribuircumberweekly($date, $quantity)
 - Allocate the full amount to the corresponding day
 - The other days are set to NULL
 
-####C) Allocation of Cost Centers
+#### C) Allocation of Cost Centers
 
-"'php
+```php
 function Get Centrocosto($ilabor, $codigo_elemento)
 {
     // Priority 1: Direct mapping by ILABOR
@@ -565,7 +565,7 @@ function Get Centrocosto($ilabor, $codigo_elemento)
 
 #### D) Excel File Conversion
 
-"'php
+```php
 function CONVERTXLSXACSVNATIVE($archivoXLSX)
 {
     // Use ZipArchive to read XLSX files
@@ -596,7 +596,7 @@ function CONVERTXLSXACSVNATIVE($archivoXLSX)
 
 ### 3. Upload Handler - File Processing
 
-"'php
+```php
 // Supports three types of operations:
 if ($_POST['action'] === 'import_centers') {
     // Import cost centers from CSV/Excel
@@ -620,7 +620,7 @@ if (isset($_FILES['csvFile'])) {
 ### 4. Cleaning System
 
 #### Cleanup.php - Complete Cleaning
-"'php
+```php
 function Performcomplete cleaning()
 {
     $Deletedfiles = limpiarArchivosTemporales();
@@ -635,7 +635,7 @@ function Performcomplete cleaning()
 ```
 
 #### Cleanup Status.php - Status and Forced Cleanup
-"'php
+```php
 function Check this cleaning()
 {
     // Account records in inventory_temp
@@ -646,7 +646,7 @@ function Check this cleaning()
 
 ### 5. Preview System - Data Preview
 
-"'php
+```php
 // 1. Verify that there is processed data
 // 2. View inventory data_temp
 // 3. Generate CSV with specific headers
@@ -688,7 +688,7 @@ REST API to manage the INUMSOP counter:
 Handles three types of operations:
 
 ###9.1 Import Cost Centers
-"'php
+```php
 // Headers for CSV download
 header('Content-Type: text/csv; charset= utf-8');
 header('Content-Arrangement: attachment; filename="contapyme_' . date('Y-m-d_H-i-s'). '.csv"');
@@ -713,7 +713,7 @@ Perform thorough cleaning($conn);
 ### Main Tables
 
 #### inventory_temp
-"'sql
+```sql
 CREATE TABLE inventory_temp (
     id INT AUTO_INCREMENT PRIMARY KEY,
     IEMP VARCHAR(10),
@@ -738,7 +738,7 @@ CREATE TABLE inventory_temp (
 ```
 
 #### accountants
-"'sql
+```sql
 CREATE TABLE contadores (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) UNIQUE,
@@ -748,7 +748,7 @@ CREATE TABLE contadores (
 ```
 
 #### centros_costs
-"'sql
+```sql
 CREATE TABLE centros_costs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     VARCHAR code(20) UNIQUE,
@@ -757,7 +757,7 @@ CREATE TABLE centros_costs (
 ```
 
 #### elements
-"'sql
+```sql
 CREATE TABLE elements (
     id INT AUTO_INCREMENT PRIMARY KEY,
     VARCHAR code(20) UNIQUE,
