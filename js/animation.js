@@ -488,7 +488,6 @@ class InventoryAnimations {
         }
     }
 
-    // Actualizar progreso
     updateProgress(percentage, processedCount = null, totalCount = null) {
         if (this.progressBar) {
             this.progressBar.style.width = `${Math.min(percentage, 100)}%`;
@@ -511,7 +510,6 @@ class InventoryAnimations {
         }
     }
 
-    // Simular progreso automático
     simulateProgress() {
         if (!this.progressBar) return;
 
@@ -531,7 +529,6 @@ class InventoryAnimations {
         return this.progressInterval;
     }
 
-    // Simular procesamiento de archivos específico
     simulateFileProcessing(totalFiles = 100) {
         let processed = 0;
         const interval = setInterval(() => {
@@ -542,10 +539,9 @@ class InventoryAnimations {
                 clearInterval(interval);
             }
 
-            const percentage = (processed / totalFiles) * 85; // Solo hasta 85%
+            const percentage = (processed / totalFiles) * 85; 
             this.updateProgress(percentage, processed, totalFiles);
             
-            // Actualizar mensaje dinámicamente
             if (processed < totalFiles * 0.3) {
                 this.updateSpinnerText('Leyendo archivo...', 'Validando formato y estructura');
             } else if (processed < totalFiles * 0.7) {
@@ -557,12 +553,10 @@ class InventoryAnimations {
             }
         }, 150);
 
-        // Guardar referencia del intervalo
         this.progressInterval = interval;
         return interval;
     }
 
-    // Completar carga con éxito o error
     completeLoading(success = true, message = '') {
         if (this.progressInterval) {
             clearInterval(this.progressInterval);
@@ -583,15 +577,13 @@ class InventoryAnimations {
                     <div class="loading-subtext">${success ? 'Los datos están listos para usar' : 'Por favor, revise el archivo e intente nuevamente'}</div>
                 `;
 
-                // CRÍTICO: Auto-ocultar y reactivar interfaz
                 setTimeout(() => {
-                    this.hideSpinner(); // Esto llamará a reactivateInterface()
+                    this.hideSpinner();
                 }, success ? 2000 : 3000);
             }
         }, 500);
     }
 
-    // Actualizar texto del spinner
     updateSpinnerText(message, subtext = '') {
         if (this.currentSpinner) {
             const textElement = this.currentSpinner.querySelector('.loading-text');
@@ -602,7 +594,6 @@ class InventoryAnimations {
         }
     }
 
-    // Mostrar mensaje animado
     showAnimatedMessage(message, type = 'info', duration = 5000) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `animated-message ${type}`;
@@ -615,12 +606,10 @@ class InventoryAnimations {
 
         document.body.appendChild(messageDiv);
 
-        // Animar entrada
         setTimeout(() => {
             messageDiv.classList.add('show');
         }, 10);
 
-        // Auto-remover
         setTimeout(() => {
             messageDiv.classList.remove('show');
             setTimeout(() => {
@@ -642,7 +631,6 @@ class InventoryAnimations {
         }
     }
 
-    // Animar secciones de la página
     animateSection(sectionId, animationType = 'fadeIn') {
         const section = document.getElementById(sectionId);
         if (section) {
@@ -655,7 +643,6 @@ class InventoryAnimations {
         }
     }
 
-    // Ocultar sección con animación
     hideSection(sectionId) {
         const section = document.getElementById(sectionId);
         if (section) {
@@ -672,7 +659,6 @@ class InventoryAnimations {
         }
     }
 
-    // Efecto de sacudida para errores
     shakeElement(element) {
         if (element) {
             element.classList.add('shake');
@@ -682,7 +668,6 @@ class InventoryAnimations {
         }
     }
 
-    // Efecto de pulso
     pulseElement(element, duration = 2000) {
         if (element) {
             element.classList.add('pulse-effect');
@@ -692,14 +677,12 @@ class InventoryAnimations {
         }
     }
 
-    // Animar estadísticas
     animateStats(statsContainer) {
         const statItems = statsContainer.querySelectorAll('.stat-item');
         statItems.forEach((item, index) => {
             setTimeout(() => {
                 item.classList.add('scale-in');
-                
-                // Animar números
+
                 const counter = item.querySelector('.counter');
                 if (counter) {
                     this.animateNumber(counter);
@@ -708,7 +691,7 @@ class InventoryAnimations {
         });
     }
 
-    // Animar números contadores
+
     animateNumber(element) {
         const finalValue = parseFloat(element.textContent) || 0;
         const duration = 1000;
@@ -726,7 +709,6 @@ class InventoryAnimations {
                 clearInterval(interval);
             }
 
-            // Formatear número según el tipo
             if (finalValue % 1 === 0) {
                 element.textContent = Math.round(currentValue);
             } else {
@@ -735,7 +717,6 @@ class InventoryAnimations {
         }, duration / steps);
     }
 
-    // Agregar efectos hover a elementos
     addHoverEffects(selector) {
         const elements = document.querySelectorAll(selector);
         elements.forEach(element => {
@@ -752,22 +733,18 @@ class InventoryAnimations {
         });
     }
 
-    // Limpiar todas las animaciones
     clearAnimations() {
-        // Remover clases de animación
         const animatedElements = document.querySelectorAll('.bounce-in, .fade-in, .slide-down, .scale-in, .shake, .pulse-effect');
         animatedElements.forEach(element => {
             element.classList.remove('bounce-in', 'fade-in', 'slide-down', 'scale-in', 'shake', 'pulse-effect');
         });
 
-        // Limpiar intervalos si existen
         if (this.progressInterval) {
             clearInterval(this.progressInterval);
             this.progressInterval = null;
         }
     }
 
-    // Efecto de observador para elementos que aparecen
     observeElement(element) {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -781,11 +758,9 @@ class InventoryAnimations {
         observer.observe(element);
     }
 
-    // NUEVO: Método de emergencia para forzar reactivación
     forceReactivate() {
         this.isAnimating = false;
         
-        // Remover todos los overlays
         const overlays = document.querySelectorAll('.loading-overlay');
         overlays.forEach(overlay => {
             if (overlay.parentNode) {
@@ -796,25 +771,21 @@ class InventoryAnimations {
         this.currentSpinner = null;
         this.progressBar = null;
         
-        // Limpiar intervalos
         if (this.progressInterval) {
             clearInterval(this.progressInterval);
             this.progressInterval = null;
         }
         
-        // Reactivar todo
         this.reactivateInterface();
         
         console.log(' Reactivación forzada completada');
     }
 }
 
-// Instanciar el sistema de animaciones cuando se carga el DOM
 document.addEventListener('DOMContentLoaded', function() {
     window.inventoryAnimations = new InventoryAnimations();
 });
 
-// Funciones auxiliares para compatibilidad
 function showLoadingAnimation(message = 'Procesando...') {
     if (window.inventoryAnimations) {
         return window.inventoryAnimations.showSpinner(message);
@@ -824,7 +795,6 @@ function showLoadingAnimation(message = 'Procesando...') {
 function hideLoadingAnimation() {
     if (window.inventoryAnimations) {
         window.inventoryAnimations.hideSpinner();
-        // Asegurar reactivación
         setTimeout(() => {
             window.inventoryAnimations.reactivateInterface();
         }, 100);
@@ -843,14 +813,12 @@ function completeLoadingAnimation(success = true, message = '') {
     }
 }
 
-// NUEVO: Función de emergencia disponible globalmente
 function forceReactivateInterface() {
     if (window.inventoryAnimations) {
         window.inventoryAnimations.forceReactivate();
     }
 }
 
-// NUEVO: Detectar si los botones están bloqueados y auto-reparar
 function checkButtonsAndRepair() {
     const buttons = document.querySelectorAll('button');
     let blockedCount = 0;
@@ -867,10 +835,8 @@ function checkButtonsAndRepair() {
     }
 }
 
-// Auto-verificar cada 5 segundos si hay botones bloqueados sin razón
 setInterval(checkButtonsAndRepair, 5000);
 
-// Exportar para uso global
 window.showLoadingAnimation = showLoadingAnimation;
 window.hideLoadingAnimation = hideLoadingAnimation;
 window.updateLoadingProgress = updateLoadingProgress;
