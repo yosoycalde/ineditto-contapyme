@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     mostrarVistPrevia();
                 } else {
-                    processInfo.innerHTML = `<p class="error">❌ Error: ${data.message}</p>`;
+                    processInfo.innerHTML = `<p class="error">Error: ${data.message}</p>`;
                     if (animationsReady) {
                         inventoryAnimations.shakeElement(processInfo);
                     }
@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (animationsReady) {
                     inventoryAnimations.completeLoading(false, 'Error de conexión');
                 }
-                processInfo.innerHTML = '<p class="error">❌ Error al procesar el archivo</p>';
+                processInfo.innerHTML = '<p class="error">Error al procesar el archivo</p>';
                 if (animationsReady) {
                     inventoryAnimations.shakeElement(processInfo);
                 }
@@ -301,7 +301,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function resetearInterfaz() {
-        // Animar ocultación de elementos
         if (animationsReady) {
             inventoryAnimations.hideSection('results');
             inventoryAnimations.hideSection('preview');
@@ -318,7 +317,6 @@ document.addEventListener('DOMContentLoaded', function () {
         
         document.getElementById('csvFile').value = '';
         
-        // Limpiar animaciones
         if (animationsReady) {
             setTimeout(() => {
                 inventoryAnimations.clearAnimations();
