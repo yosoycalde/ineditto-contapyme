@@ -700,7 +700,6 @@ class InventoryAnimations {
                 element.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
                 element.style.transition = 'all 0.3s ease';
             });
-
             element.addEventListener('mouseleave', () => {
                 element.style.transform = 'translateY(0)';
                 element.style.boxShadow = '';
@@ -713,7 +712,6 @@ class InventoryAnimations {
         animatedElements.forEach(element => {
             element.classList.remove('bounce-in', 'fade-in', 'slide-down', 'scale-in', 'shake', 'pulse-effect');
         });
-
         if (this.progressInterval) {
             clearInterval(this.progressInterval);
             this.progressInterval = null;

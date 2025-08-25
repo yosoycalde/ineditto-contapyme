@@ -494,7 +494,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (animationsReady) {
                         setTimeout(() => {
                             inventoryAnimations.animateSection('preview', 'slide-down');
-                            // Agregar efectos hover
                             setTimeout(() => {
                                 inventoryAnimations.addHoverEffects('.stat-item, .day-badge, .day-stat');
                             }, 500);
