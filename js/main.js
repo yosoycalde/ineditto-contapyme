@@ -89,8 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         formData.append('csvFile', file);
         const processInfo = document.getElementById('processInfo');
-        
-        // ANIMACIÓN DE CARGA - Iniciar spinner
+
         if (animationsReady) {
             inventoryAnimations.showSpinner(
                 `Procesando archivo ${fileExt.toUpperCase()}...`,
@@ -106,7 +105,6 @@ document.addEventListener('DOMContentLoaded', function () {
             resultsSection.style.display = 'block';
         }
 
-        // Simular progreso de procesamiento
         let progressInterval;
         if (animationsReady) {
             progressInterval = inventoryAnimations.simulateFileProcessing(100);
@@ -118,12 +116,10 @@ document.addEventListener('DOMContentLoaded', function () {
         })
             .then(response => response.json())
             .then(data => {
-                // Detener simulación de progreso
                 if (progressInterval) {
                     clearInterval(progressInterval);
                 }
 
-                // ANIMACIÓN DE CARGA - Completar según resultado
                 if (animationsReady) {
                     inventoryAnimations.completeLoading(data.success, data.message);
                 }
@@ -218,8 +214,7 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(error => {
                 console.error('Error:', error);
-                
-                // Detener simulación si hay error
+
                 if (progressInterval) {
                     clearInterval(progressInterval);
                 }
@@ -235,7 +230,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     downloadBtn.addEventListener('click', function () {
-        // ANIMACIÓN DE DESCARGA
         if (animationsReady) {
             inventoryAnimations.showSpinner('Preparando descarga...', 'Generando archivo CSV y limpiando datos');
             inventoryAnimations.pulseElement(downloadBtn, 1000);
@@ -397,7 +391,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         th.textContent = header;
                         headerRow.appendChild(th);
                         
-                        // Animar headers si hay animaciones
                         if (animationsReady) {
                             th.style.opacity = '0';
                             th.style.transform = 'translateY(-10px)';
@@ -413,7 +406,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     data.data.forEach((row, index) => {
                         const tr = document.createElement('tr');
                         
-                        // Agregar clase para animación
                         if (animationsReady) {
                             tr.style.opacity = '0';
                             tr.style.transform = 'translateX(-20px)';
@@ -432,7 +424,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             }
                         }
 
-                        // Agregar las celdas originales
                         Object.values(row).forEach(cell => {
                             const td = document.createElement('td');
                             td.textContent = cell || '';
@@ -447,7 +438,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         tableBody.appendChild(tr);
 
-                        // Animar fila por fila
                         if (animationsReady) {
                             setTimeout(() => {
                                 tr.style.transition = 'all 0.4s ease';
@@ -467,7 +457,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             distribucionHTML += '</ul>';
 
                             if (data.statistics) {
-                                distribucionHTML += '<h4>📊 Distribución por Día de Semana:</h4><div class="day-distribution-preview">';
+                                distribucionHTML += '<h4>Distribución por Día de Semana:</h4><div class="day-distribution-preview">';
                                 const diasSemana = [
                                     { nombre: 'Lunes', cantidad: data.statistics.registros_lunes || 0 },
                                     { nombre: 'Martes', cantidad: data.statistics.registros_martes || 0 },
@@ -488,7 +478,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
                             distribucionDiv.innerHTML = distribucionHTML;
 
-                            // Animar distribución
                             if (animationsReady) {
                                 setTimeout(() => {
                                     distribucionDiv.style.opacity = '0';
@@ -504,7 +493,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     }
 
-                    // Animar aparición de la sección de vista previa
                     if (animationsReady) {
                         setTimeout(() => {
                             inventoryAnimations.animateSection('preview', 'slide-down');
@@ -530,7 +518,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (animationsReady) {
             inventoryAnimations.showAnimatedMessage(message, type);
         } else {
-            // Fallback para el sistema original
             let messageDiv = document.getElementById('globalMessage');
             if (!messageDiv) {
                 messageDiv = document.createElement('div');
@@ -578,12 +565,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Configuración inicial
     const csvFileInput = document.getElementById('csvFile');
     if (csvFileInput) {
         csvFileInput.accept = '.csv,.xlsx,.xls';
         
-        // Agregar eventos para drag & drop mejorado
         csvFileInput.addEventListener('change', function(e) {
             if (e.target.files.length > 0 && animationsReady) {
                 const fileName = e.target.files[0].name;
@@ -596,7 +581,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Efectos de drag & drop
         const fileContainer = csvFileInput.parentElement;
         if (fileContainer && animationsReady) {
             fileContainer.addEventListener('dragover', function(e) {
@@ -625,7 +609,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Estilos adicionales para las animaciones
     const additionalStyles = document.createElement('style');
     additionalStyles.textContent = `
         .day-distribution {

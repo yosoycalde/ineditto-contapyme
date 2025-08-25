@@ -75,7 +75,6 @@ function distribuirCantidadPorDiaSemana($fecha, $cantidad)
         
     } catch (Exception $e) {
         error_log("Error procesando fecha $fecha: " . $e->getMessage());
-        // Por defecto en lunes si hay error
         $distribucion['QCANTLUN'] = floatval($cantidad);
     }
     
@@ -550,14 +549,11 @@ function procesarInventarioIneditto($archivo_csv)
                     $fila['ILABOR'] ?? '',
                     $fila['IRECURSO'] ?? ''
                 );
-                // Obtener siguiente número consecutivo ENTERO
                 $siguienteINUMSOP = obtenerSiguienteINUMSOP();
                 
-                // NUEVA FUNCIONALIDAD: Distribuir cantidad según día de semana de FSOPORT
                 $fechaMovimiento = $fila['FSOPORT'] ?? '';
                 $cantidadOriginal = !empty($fila['QCANTLUN']) ? floatval($fila['QCANTLUN']) : 0;
                 
-                // Obtener distribución por día de semana
                 $distribucionDias = distribuirCantidadPorDiaSemana($fechaMovimiento, $cantidadOriginal);
                 
                 error_log("Procesando registro - Fecha: $fechaMovimiento, Cantidad: $cantidadOriginal, Distribución: " . json_encode($distribucionDias));
@@ -566,12 +562,11 @@ function procesarInventarioIneditto($archivo_csv)
                     ':iemp' => $fila['IEMP'] ?? '1',
                     ':fsoport' => $fechaMovimiento,
                     ':itdsop' => $fila['ITDSOP'] ?? '160',
-                    ':inumsop' => $siguienteINUMSOP, // Número entero consecutivo
+                    ':inumsop' => $siguienteINUMSOP,
                     ':inventario' => $fila['INVENTARIO'] ?? '1',
                     ':irecurso' => $fila['IRECURSO'] ?? '',
                     ':iccsubcc' => $centro_costo,
                     ':ilabor' => $fila['ILABOR'] ?? '',
-                    // Usar la distribución calculada en lugar de los valores originales
                     ':qcantlun' => $distribucionDias['QCANTLUN'],
                     ':qcantmar' => $distribucionDias['QCANTMAR'],
                     ':qcantmie' => $distribucionDias['QCANTMIE'],

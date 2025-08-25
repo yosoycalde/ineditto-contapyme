@@ -1,6 +1,3 @@
-// Sistema de Animaciones de Carga para Inventarios Ineditto → ContaPyme
-// Archivo: js/animations.js
-
 class InventoryAnimations {
     constructor() {
         this.currentSpinner = null;
@@ -8,7 +5,7 @@ class InventoryAnimations {
         this.isAnimating = false;
         this.messageQueue = [];
         this.progressInterval = null;
-        this.blockedElements = new Set(); // NUEVO: rastrear elementos bloqueados
+        this.blockedElements = new Set();
         this.init();
     }
 
@@ -319,19 +316,16 @@ class InventoryAnimations {
     }
 
     setupParticleSystem() {
-        // Mejorar el sistema de partículas existente si está presente
         const canvas = document.getElementById('particleCanvas');
         if (canvas) {
             canvas.style.transition = 'opacity 0.3s ease';
         }
     }
 
-    // Mostrar spinner principal
     showSpinner(message = 'Procesando...', subtext = '') {
-        this.hideSpinner(); // Remover spinner anterior si existe
+        this.hideSpinner();
         this.isAnimating = true;
 
-        // Bloquear interacciones durante la carga
         this.blockInterfaceInteractions();
 
         const overlay = document.createElement('div');
@@ -370,18 +364,15 @@ class InventoryAnimations {
         this.currentSpinner = overlay;
         this.progressBar = overlay.querySelector('#mainProgressBar');
 
-        // Animar entrada
         setTimeout(() => {
             overlay.classList.add('show');
         }, 10);
 
-        // Simular progreso inicial
         this.simulateProgress();
         
         return overlay;
     }
 
-    // Ocultar spinner
     hideSpinner() {
         if (this.currentSpinner) {
             this.currentSpinner.classList.remove('show');
@@ -393,7 +384,6 @@ class InventoryAnimations {
                 this.currentSpinner = null;
                 this.progressBar = null;
                 
-                // CRÍTICO: Reactivar todos los elementos después de ocultar
                 this.reactivateInterface();
                 
             }, 300);
@@ -405,37 +395,30 @@ class InventoryAnimations {
             this.progressInterval = null;
         }
         
-        // Resetear estado de animación
         this.isAnimating = false;
     }
 
-    // NUEVO: Método para reactivar la interfaz
     reactivateInterface() {
-        // Reactivar todos los botones
         const buttons = document.querySelectorAll('button');
         buttons.forEach(button => {
             button.disabled = false;
             button.style.pointerEvents = 'auto';
             button.style.opacity = '1';
-            // Remover cualquier overlay o z-index problemático
             button.style.position = '';
             button.style.zIndex = '';
         });
 
-        // Reactivar formularios
         const forms = document.querySelectorAll('form');
         forms.forEach(form => {
             form.style.pointerEvents = 'auto';
         });
 
-        // Reactivar inputs
         const inputs = document.querySelectorAll('input, select, textarea');
         inputs.forEach(input => {
             input.disabled = false;
             input.style.pointerEvents = 'auto';
         });
 
-        // Asegurar que no hay overlays residuales
         const overlays = document.querySelectorAll('.loading-overlay');
         overlays.forEach(overlay => {
             if (overlay !== this.currentSpinner && overlay.parentNode) {
@@ -443,32 +426,25 @@ class InventoryAnimations {
             }
         });
 
-        // Limpiar elementos bloqueados
         this.blockedElements.clear();
 
-        // Restaurar el scroll del body si estaba bloqueado
         document.body.style.overflow = '';
         
-        console.log('✅ Interfaz reactivada - todos los botones deberían funcionar');
+        console.log('Interfaz reactivada - todos los botones deberían funcionar');
     }
 
-    // NUEVO: Bloquear interacciones de la interfaz
     blockInterfaceInteractions() {
-        // Bloquear todos los botones principales
         const buttons = document.querySelectorAll('button:not(.loading-overlay button)');
         buttons.forEach(button => this.blockElement(button));
 
-        // Bloquear formularios
         const forms = document.querySelectorAll('form');
         forms.forEach(form => {
             form.style.pointerEvents = 'none';
         });
 
-        // Prevenir scroll del body
         document.body.style.overflow = 'hidden';
     }
 
-    // NUEVO: Método para bloquear elementos durante carga
     blockElement(element) {
         if (element) {
             this.blockedElements.add(element);
@@ -478,7 +454,6 @@ class InventoryAnimations {
         }
     }
 
-    // NUEVO: Método para desbloquear elementos específicos
     unblockElement(element) {
         if (element) {
             this.blockedElements.delete(element);
